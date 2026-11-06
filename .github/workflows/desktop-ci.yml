@@ -49,5 +49,9 @@ jobs:
       - name: Run tests and enforce baseline
         run: npm run test:ci
 
-      - name: Package unsigned macOS app
-        run: npm run pack
+      - name: Package and verify ad-hoc macOS app
+        # This job has no signing credentials. Builder otherwise skips even
+        # ad-hoc signing on PRs; force that identity and never publish here.
+        env:
+          CSC_FOR_PULL_REQUEST: 'true'
+        run: npm run pack -- --publish never --config.mac.identity=- --config.mac.notarize=false
