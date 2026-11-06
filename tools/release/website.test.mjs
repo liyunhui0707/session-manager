@@ -8,7 +8,7 @@ const html=fs.readFileSync(path.join(root,'website/public/index.html'),'utf8');
 // The site advertises the released version, while the app may be preparing a
 // newer candidate. Never require public links to unpublished assets.
 const release=html.match(/data-version>(\d+\.\d+\.\d+)</)?.[1];
-test('website download links agree with its published version and disclose unsigned manual installation',()=>{
+test('website download links agree with its published version and disclose unnotarized manual installation',()=>{
   assert.ok(release);
   const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1]);
   const downloads=links.filter(s=>/releases\/download\//.test(s));
@@ -16,7 +16,7 @@ test('website download links agree with its published version and disclose unsig
   for(const url of downloads){
     assert.ok(url.startsWith(`https://github.com/liyunhui0707/session-manager/releases/download/v${release}/AI-Session-Manager-${release}-mac-arm64.`));
   }
-  assert.match(html,/未签名、未公证/);assert.match(html,/尚不提供应用内自动安装/);
+  assert.match(html,/未使用 Apple Developer ID 签名，也未公证/);assert.match(html,/尚不提供应用内自动安装/);
 });
 test('local assets and anchors resolve; website does not add external script or font loading',()=>{
   const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));

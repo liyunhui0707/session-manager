@@ -8,5 +8,5 @@
 - Build output, dependencies and temporary synthetic QA artifacts are ignored, not product source. Preserve useful rollback evidence; cleanup must have specific targets.
 - Check release artifacts against the exact tag, verify checksums and run the packaged synthetic checks. Distribution artifacts belong in GitHub Releases, not Git commits.
 - Installed applications are separate from build output. Quit before replacing a local installed build. Do not modify users' Dock entries or install to a system directory as part of CI.
-- Current public packages are unsigned and manually updated. Never present an unsigned build as notarized or claim auto-update acceptance before testing signed upgrades.
+- Current public packages are ad-hoc signed, without Developer ID or notarization, and manually updated. Never present an ad-hoc build as notarized or claim auto-update acceptance before testing signed upgrades.
 - Use SemVer: patch for fixes, minor for new behavior before 1.0. A 1.0 declaration is a deliberate product decision. Keep `package.json`, lockfile and release notes consistent.

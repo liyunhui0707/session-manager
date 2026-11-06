@@ -7,8 +7,8 @@ there after the initial publication. Never push the original private development
 repository or archive refs into it. Public commits use a maintainer's GitHub
 noreply address; no global Git identity change is required.
 
-The channel does not use Developer ID or notarization. Starting with the 0.10.3
-candidate, complete ad-hoc bundle signatures are required for DMG and ZIP files;
+The channel does not use Developer ID or notarization. Starting with 0.10.3,
+complete ad-hoc bundle signatures are required for DMG and ZIP files;
 they seal resources but do not establish a trusted developer identity.
 Intel builds are candidates until architecture-specific GUI acceptance is recorded.
 Do not publish an update manifest or advertise in-app update installation before
@@ -63,7 +63,7 @@ acceptance; do not remove quarantine or disable system protection to pass it.
 Generate checksums from exact-version files, never a broad directory glob:
 
 ```sh
-node tools/release/release-metadata.mjs apps/desktop/dist 0.10.2 arm64
+node tools/release/release-metadata.mjs apps/desktop/dist 0.10.3 arm64
 ```
 
 Create a **draft** GitHub Release for the verified tag. Upload only the reviewed
