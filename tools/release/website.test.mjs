@@ -5,13 +5,16 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const html=fs.readFileSync(path.join(root,'website/public/index.html'),'utf8');
-const pkg=JSON.parse(fs.readFileSync(path.join(root,'apps/desktop/package.json')));
-test('website download links agree with package and disclose unsigned manual installation',()=>{
+// The site advertises the released version, while the app may be preparing a
+// newer candidate. Never require public links to unpublished assets.
+const release=html.match(/data-version>(\d+\.\d+\.\d+)</)?.[1];
+test('website download links agree with its published version and disclose unsigned manual installation',()=>{
+  assert.ok(release);
   const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1]);
   const downloads=links.filter(s=>/releases\/download\//.test(s));
   assert.equal(downloads.length,2);
   for(const url of downloads){
-    assert.ok(url.startsWith(`https://github.com/liyunhui0707/session-manager/releases/download/v${pkg.version}/AI-Session-Manager-${pkg.version}-mac-arm64.`));
+    assert.ok(url.startsWith(`https://github.com/liyunhui0707/session-manager/releases/download/v${release}/AI-Session-Manager-${release}-mac-arm64.`));
   }
   assert.match(html,/未签名、未公证/);assert.match(html,/尚不提供应用内自动安装/);
 });

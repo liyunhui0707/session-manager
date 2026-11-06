@@ -24,3 +24,16 @@ Use invented conversations and a fresh profile. Do not open personal chat stores
 - Check clean exit and no candidate process left behind.
 
 Automated companion: `node apps/desktop/tools/qa/reader-smoke.mjs '/absolute/path/AI Session Manager.app'`. The whole QA directory must accompany the entry point. Resource/long-run options are documented in the script. Harness success is not a substitute for the native installation checks above.
+
+For a controlled manual-replacement regression on macOS with Node.js 24, run:
+
+```sh
+node apps/desktop/tools/qa/reader-upgrade.mjs '/path/to/old/App.app' '/path/to/candidate/App.app'
+```
+
+This harness copies both bundles into a private temporary install directory,
+uses one synthetic conversation and profile, and checks normal quit/restart and
+replacement at the same path. It verifies source restoration, favorites, reading
+preferences and readable content. It leaves the original bundles and daily App
+untouched, retains the prior test copy, and writes a JSON report with ASAR hashes
+and runtime versions. It does not test Finder installation or Gatekeeper.

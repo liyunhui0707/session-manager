@@ -57,11 +57,14 @@ npm run dev
 ```sh
 npm run test:ci
 npm run audit:prod
+npm run audit:release
 npm run pack
 npm run dist:mac
 ```
 
-打包使用当前机器的架构，产物位于 `apps/desktop/dist/`。不要使用 ARM 构建机生成含 ARM 原生辅助程序的 Intel 包。发布流程会在对应架构的构建机分别构建。
+`dist:mac` 会自动准备并校验 Electron 运行时，首次下载需要网络；无需先启动开发版。同版本 DMG / ZIP 已存在时会停止，请先移走要保留的旧产物。
+
+打包使用当前机器的架构，产物位于 `apps/desktop/dist/`。不要使用 ARM 构建机生成含 ARM 原生辅助程序的 Intel 包。发布流程会在对应架构的构建机分别构建。完整依赖审计同时覆盖随 App 分发的 Electron；[已评估的构建依赖告警](docs/dependency-audit.md)单独记录。
 
 ## 参与与支持
 

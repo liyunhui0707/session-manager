@@ -56,6 +56,7 @@ jobs:
         run: |
           npm run test:ci
           npm run audit:prod
+          npm run audit:release
       - name: Build unsigned DMG and ZIP
         working-directory: apps/desktop
         run: npm run dist:mac

@@ -27,10 +27,16 @@ npm ci
 npm run dev
 npm run test:ci
 npm run audit:prod
+npm run audit:release
 npm run dist:mac
 ```
 
 Build on the target CPU architecture. The native scanner and Electron runtime must match. See [contributing](../CONTRIBUTING.md), [privacy](privacy.md), and [release procedure](releasing.md).
+
+`dist:mac` prepares and checksum-validates Electron automatically. The first
+download needs network access. Move existing same-version DMG/ZIP artifacts
+aside before rebuilding. The full audit includes Electron, even though npm
+classifies it as a development dependency; see [remaining build-tool findings](dependency-audit.md).
 
 ## Scope
 

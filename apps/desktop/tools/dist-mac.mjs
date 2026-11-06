@@ -10,6 +10,18 @@ if (process.platform !== 'darwin' || !['arm64', 'x64'].includes(process.arch)) {
 }
 if (process.argv.length !== 2) throw Error('Build on the target architecture; no cross-build arguments are accepted');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json')));
+const prefix = path.join(root, 'dist', `AI-Session-Manager-${pkg.version}-mac-${process.arch}`);
+for (const ext of ['dmg', 'zip']) {
+  if (fs.existsSync(`${prefix}.${ext}`)) throw Error(`Artifact already exists: ${prefix}.${ext}; move the previous candidate aside before rebuilding`);
+}
+// Electron 43+ installs its runtime on demand, not during npm ci. Use its
+// installer (including checksum validation) before giving the builder this path.
+const runtime = spawnSync(process.execPath, [path.join(root, 'node_modules/electron/install.js')], {
+  cwd: root, stdio: 'inherit', timeout: 300000,
+});
+if (runtime.error) throw runtime.error;
+if (runtime.status !== 0) process.exit(runtime.status ?? 1);
 const builder = path.join(root, 'node_modules/electron-builder/cli.js');
 const result = spawnSync(process.execPath, [builder, '--mac', 'dir',
   `--${process.arch}`, '--publish', 'never',
@@ -22,12 +34,7 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 
 // Native macOS tools avoid extra archive/DMG helper downloads. Retain staging
 // after failures for diagnosis; never remove arbitrary files as part of a build.
-const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json')));
 const app = path.join(root, 'dist', process.arch === 'arm64' ? 'mac-arm64' : 'mac', `${pkg.productName}.app`);
-const prefix = path.join(root, 'dist', `AI-Session-Manager-${pkg.version}-mac-${process.arch}`);
-for (const ext of ['dmg', 'zip']) {
-  if (fs.existsSync(`${prefix}.${ext}`)) throw Error(`Artifact already exists: ${prefix}.${ext}; move the previous candidate aside before rebuilding`);
-}
 const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'asm-dmg-'));
 fs.chmodSync(stage, 0o700);
 const commands = [
