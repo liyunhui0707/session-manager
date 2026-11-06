@@ -1,0 +1,3 @@
+{"type":"response_item","timestamp":"2026-01-01T00:00:00.000Z","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"run cmd"}]}}
+{"type":"response_item","timestamp":"2026-01-01T00:00:01.000Z","payload":{"type":"function_call","name":"shell","arguments":"{\"command\":[\"ls\",\"-la\"]}","call_id":"call-1"}}
+{"type":"response_item","timestamp":"2026-01-01T00:00:02.000Z","payload":{"type":"function_call_output","call_id":"call-1","output":"total 0\n"}}

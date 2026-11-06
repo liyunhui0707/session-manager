@@ -1,0 +1,33 @@
+// Synthetic packaged-reader smoke test. Loaded before the production main entry.
+module.exports = function installSmoke(base) {
+const {app,dialog,nativeTheme}=require('electron');const fs=require('node:fs');const assert=require('node:assert/strict');const fixture=JSON.parse(fs.readFileSync(base+'/paths.json'));app.setPath('home',base+'/profile');app.setPath('userData',base+'/profile');app.setPath('sessionData',base+'/profile');dialog.showOpenDialog=async()=>({canceled:false,filePaths:[fixture.root]});nativeTheme.themeSource='light';
+const priorityCheck=require('./reader-sync-priority-check.cjs')(app);
+const appendCheck=require('./reader-append-check.cjs')(app);
+app.on('browser-window-created',(_ev,win)=>win.webContents.once('did-finish-load',async()=>{const checks=[];const e=code=>win.webContents.executeJavaScript(code,true);const wait=()=>new Promise(r=>setTimeout(r,120));const check=(name,value)=>{assert.ok(value,name);checks.push(name);};try{
+await wait();check('empty isolated startup',await e('sessionManagerApp.getState().sessions.length===0'));check('stylesheet loaded',await e('document.styleSheets.length===1&&document.styleSheets[0].cssRules.length>50'));await wait();fs.writeFileSync(base+'/empty-light.png',(await win.webContents.capturePage()).toPNG());
+await e('sessionManagerApp.chooseCodexFolder()');check('six synthetic sessions',await e('sessionManagerApp.getState().folder.entries.length===6'));const id=await e(`sessionManagerApp.getState().folder.entries.find(x=>x.sessionId===${JSON.stringify(fixture.id)}).entryId`);await e(`sessionManagerApp.openCodexCatalogEntry(${JSON.stringify(id)})`);check('user and assistant Markdown',await e("document.querySelectorAll('.read-section').length===4&&!!document.querySelector('pre code')"));check('assistant Markdown starts fully expanded',await e("document.querySelector('pre code').getBoundingClientRect().height>0 && document.querySelector('.assistant-turn .message-disclosure').getAttribute('aria-expanded')==='true'"));await e("document.querySelector('.assistant-turn .message-disclosure').click()");check('assistant reply can be folded manually',await e("document.querySelector('pre code').getBoundingClientRect().height===0 && document.querySelector('.assistant-turn .message-disclosure').getAttribute('aria-expanded')==='false'"));await e("document.querySelector('.assistant-turn .message-disclosure').click()");check('assistant reply expands again without losing Markdown',await e("document.querySelector('pre code').getBoundingClientRect().height>0 && document.querySelectorAll('.read-section').length===4"));check('diagnostics collapsed',await e("!document.querySelector('.diagnostics-panel').open"));check('Refresh disabled',await e("document.getElementById('refreshButton').disabled"));await wait();fs.writeFileSync(base+'/reader-light.png',(await win.webContents.capturePage()).toPNG());
+await e("const input=document.getElementById('inFileSearchInput');input.value='quiet';input.dispatchEvent(new Event('input',{bubbles:true}));");check('search highlights',await e("document.querySelectorAll('mark').length>0"));await e("document.getElementById('inFileSearchInput').value='';document.getElementById('inFileSearchInput').dispatchEvent(new Event('input',{bubbles:true}));");await e("document.querySelector('.session-star').focus()");win.webContents.sendInputEvent({type:'keyDown',keyCode:'Return'});win.webContents.sendInputEvent({type:'keyUp',keyCode:'Return'});await wait();check('keyboard favorite',await e("!!document.querySelector('.session-star--on')"));await e('sessionManagerApp.reloadCodexFolderEntry()');check('Reload keeps conversation',await e("document.querySelectorAll('.read-section').length===4"));
+nativeTheme.themeSource='dark';await wait();check('dark theme',await e("getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim()==='#202522'"));fs.writeFileSync(base+'/reader-dark.png',(await win.webContents.capturePage()).toPNG());win.setSize(900,600);await wait();check('minimum width no page overflow',await e('document.documentElement.scrollWidth<=innerWidth'));check('reader independently scrolls',await e("getComputedStyle(document.querySelector('.read-shell')).overflowY==='auto'"));await e("document.querySelector('.source-menu').open=true");check('source menu inside viewport',await e("document.querySelector('.source-menu-content').getBoundingClientRect().right<=innerWidth"));fs.writeFileSync(base+'/reader-900.png',(await win.webContents.capturePage()).toPNG());await e("document.querySelector('.source-menu').open=false;document.querySelector('.diagnostics-panel').open=true");check('diagnostics remain available',await e("document.getElementById('directDiagnostics').textContent.includes('4 条消息')"));await e('sessionManagerApp.rescanCodexFolder()');check('Rescan keeps catalog',await e('sessionManagerApp.getState().folder.entries.length===6'));
+await require('./reader-shell-check.cjs')({base,win,check,e});
+if(fixture.longPath) await require('./long-reader-check.cjs')({base,fixture,win,check,e});
+if(fixture.zstdPath) await require('./zstd-reader-check.cjs')({base,fixture,win,check,e});
+await require('./catalog-diagnostics-check.cjs')({base,fixture,win,check,e,dialog});
+await require('./codex-live-check.cjs')({base,fixture,win,check,e,dialog});
+await require('./reader-recovery-check.cjs')({base,win,check,e,dialog});
+await require('./reader-origin-check.cjs')({base,win,check,e,dialog});
+await require('./reader-library-shell-check.cjs')({base,win,check,e,dialog});
+await require('./reader-presentation-check.cjs')({base,win,check,e,dialog});
+await require('./reader-images-check.cjs')({base,win,check,e,dialog});
+await require('./reader-large-body-check.cjs')({base,win,check,e,dialog});
+await require('./reader-experience-check.cjs')({base,win,check,e,dialog});
+await priorityCheck({base,e,check,dialog});
+await require('./reader-cache-check.cjs')({base,check});
+await appendCheck({base,e,check,dialog});
+await require('./reader-search-pages-check.cjs')({base,e,check,dialog,win});
+await require('./reader-comfort-check.cjs')({base,e,check,dialog,win});
+if(fixture.soak) await require('./reader-soak-check.cjs')({base,win,e,check,dialog});
+if(fixture.resources) await require('./reader-resource-check.cjs')({base,e,check,dialog});
+check('retired physical reader is absent from packaged product', !fs.existsSync(app.getAppPath()+'/tools/legacy-reader') && !fs.existsSync(app.getAppPath()+'/lib/codex-paged-reader.js'));
+fs.writeFileSync(base+'/qa-result.json',JSON.stringify({checks,errors:[],packaged:app.isPackaged,defaultApp:!!process.defaultApp},null,2));}catch(error){fs.writeFileSync(base+'/qa-result.json',JSON.stringify({checks,errors:[error.message]},null,2));}app.quit();}));
+
+};

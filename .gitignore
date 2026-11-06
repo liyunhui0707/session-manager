@@ -1,0 +1,49 @@
+# macOS
+.DS_Store
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+!apps/desktop/build/
+!apps/desktop/build/entitlements.mac.plist
+/apps/desktop/build/native/
+/apps/desktop/build/app.iconset/
+/apps/desktop/build/app.icns
+/apps/desktop/build/icon-builder
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+
+# Environment and secret material
+.env
+.env.*
+secrets/
+
+# Editors and local agent configuration
+.vscode/
+.idea/
+.claude/
+.codex/
+.mcp.json
+
+# Workflow runtime state
+.workflow/
+
+# Never commit local transcript libraries
+/Inbox/
+/AI Chats/
+/session-library/
+/claude-code/
+/codex/
+
+# Test/tool caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Private maintenance evidence; never publish
+/.local-maintenance/

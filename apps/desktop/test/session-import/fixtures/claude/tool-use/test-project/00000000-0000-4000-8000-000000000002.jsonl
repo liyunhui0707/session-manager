@@ -1,0 +1,2 @@
+{"type":"user","timestamp":"2026-01-01T00:00:00.000Z","cwd":"/tmp","version":"1.0.0","sessionId":"00000000-0000-4000-8000-000000000002","message":{"content":"run ls"}}
+{"type":"assistant","timestamp":"2026-01-01T00:00:01.000Z","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"ls -la"}}]}}

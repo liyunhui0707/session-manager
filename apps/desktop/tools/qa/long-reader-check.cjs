@@ -1,0 +1,25 @@
+'use strict';
+const navigate = require('./page-navigation.cjs');
+module.exports = async function ({ base, fixture, win, check, e }) {
+  const { dialog } = require('electron'), fs = require('node:fs');
+  dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [fixture.longPath] });
+  await e('sessionManagerApp.chooseCodexFile()');
+  const latest = await e("document.getElementById('readMount').textContent");
+  check('large raw file has bounded messages', await e("document.querySelectorAll('.read-section').length>0 && document.querySelectorAll('.read-section').length<=100 && document.getElementById('largeSessionNotice').hidden"));
+  check('local segment search remains available', await e("document.getElementById('inFileSearchInput').placeholder==='查找当前部分…'"));
+  fs.writeFileSync(base+'/latest-position.json', JSON.stringify(await e("({expected: "+fixture.lastMessage+", tail: document.getElementById('readMount').textContent.slice(-3000), nextDisabled: document.getElementById('transcriptNext').disabled, top: document.querySelector('.read-shell').scrollTop, height: document.querySelector('.read-shell').scrollHeight, client: document.querySelector('.read-shell').clientHeight})")));
+  check('large raw file opens at latest message and bottom', latest.includes('Message ' + fixture.lastMessage) && await e("document.getElementById('transcriptNext').disabled && Math.abs(document.querySelector('.read-shell').scrollHeight-document.querySelector('.read-shell').scrollTop-document.querySelector('.read-shell').clientHeight)<2"));
+  await navigate(e, 'previous');
+  check('previous replaces bounded DOM with older messages', await e("document.querySelectorAll('.read-section').length===100 && !document.getElementById('transcriptNext').disabled"));
+  await navigate(e, 'next');
+  check('next restores latest content in original order', latest === await e("document.getElementById('readMount').textContent"));
+  await navigate(e, 'previous');
+  await e('sessionManagerApp.reloadCodexFile()');
+  check('Reload opens latest snapshot', latest === await e("document.getElementById('readMount').textContent"));
+  check('long reader fits minimum viewport', await e('document.documentElement.scrollWidth<=innerWidth'));
+  check('long conversation keeps Refresh disabled', await e("document.getElementById('refreshButton').disabled"));
+  await new Promise(resolve => setTimeout(resolve, 120));
+  fs.writeFileSync(base + '/long-reader-900.png', (await win.webContents.capturePage()).toPNG());
+  await e('sessionManagerApp.backToLibrary()');
+  check('leaving long conversation clears pager', await e("document.getElementById('transcriptPager').hidden"));
+};

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Session Manager</title>
+  <link rel="stylesheet" href="./reader.css">
+</head>
+<body>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></symbol>
+    <symbol id="chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="down" viewBox="0 0 24 24"><path d="M12 4v16m-6-6 6 6 6-6"/></symbol>
+    <symbol id="up" viewBox="0 0 24 24"><path d="M12 20V4m-6 6 6-6 6 6"/></symbol>
+    <symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="settings" viewBox="0 0 24 24"><path d="m9 3-.7 2.5-2.2 1L3.7 6 2 9l1.8 1.8v2.4L2 15l1.7 3 2.4-.5 2.2 1L9 21h6l.7-2.5 2.2-1 2.4.5 1.7-3-1.8-1.8v-2.4L22 9l-1.7-3-2.4.5-2.2-1L15 3Z"/><circle cx="12" cy="12" r="3.5"/></symbol>
+    <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+    <symbol id="folder" viewBox="0 0 24 24"><path d="M3 7V5h6l2 2h10v12H3Z"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M15 8V3H3v13h5"/></symbol>
+    <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="moon" viewBox="0 0 24 24"><path d="M20 14A9 9 0 0 1 10 3a9 9 0 1 0 10 11Z"/></symbol>
+    <symbol id="monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></symbol>
+    <symbol id="refresh" viewBox="0 0 24 24"><path d="M20 8a8 8 0 1 0 0 8M20 3v5h-5"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="book" viewBox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/></symbol>
+  </defs></svg>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="会话导航">
+      <div class="brand"><span class="brand-symbol" aria-hidden="true">≋</span><span>Session Manager<small>每一次对话，都值得回看</small></span></div>
+      <button id="searchLaunch" class="search-launch" type="button"><svg aria-hidden="true"><use href="#search"/></svg><span>搜索对话</span><kbd>⌘ K</kbd></button>
+      <div id="librarySourceTabs" class="source-tabs" role="group" aria-label="会话来源" hidden><button type="button" data-agent="all" aria-pressed="true">全部</button><button type="button" data-agent="codex" aria-pressed="false">Codex</button><button type="button" data-agent="claude" aria-pressed="false">Claude</button></div>
+      <div id="currentSourceChip" class="source-chip" hidden>Codex · 未归档对话</div>
+      <div class="list-heading"><span id="listHeading">最近会话</span><button id="favoritesFilter" class="icon-button" type="button" title="只看收藏" aria-label="只看收藏"><svg aria-hidden="true"><use href="#star"/></svg></button></div>
+      <div id="folderFilter" class="sidebar-search" hidden><input id="folderFilterInput" type="search" placeholder="筛选标题或 ID…" aria-label="筛选会话标题或 ID"></div>
+      <div id="libraryFilter" class="sidebar-search"><input id="libraryFilterInput" type="search" placeholder="筛选标题…" aria-label="筛选库中的会话标题"></div>
+      <div id="folderPager" class="folder-pager" hidden><span id="folderPageStatus">0 个会话</span><button id="folderPrevPageButton" type="button" aria-label="上一页会话">←</button><button id="folderNextPageButton" type="button" aria-label="下一页会话">→</button></div>
+      <div id="libraryWarning" class="library-warning" role="status" hidden></div>
+      <div id="refreshResult" class="refresh-result" role="status" hidden></div>
+      <div id="sessionList" class="session-list" aria-label="会话列表"></div>
+      <div id="emptyState" class="empty-state">选择本地来源，开始回看对话。</div>
+      <footer class="sidebar-footer"><button id="sourcesButton" class="source-summary" type="button"><span class="live-dot" aria-hidden="true"></span><span id="sourceSummaryText"><span id="sourceSummary">连接本地来源</span><small id="sourceSubtitle">本地只读</small></span><svg aria-hidden="true"><use href="#chevron"/></svg></button><button id="settingsButton" class="icon-button" type="button" title="阅读设置" aria-label="阅读设置"><svg aria-hidden="true"><use href="#settings"/></svg></button></footer>
+    </aside>
+    <main class="content" aria-label="会话阅读器">
+      <header class="reader-header"><div class="reader-heading"><h1 id="readTitle" class="content-title"></h1><p id="readerMeta" class="reader-meta">你的对话，安静收藏</p></div><div class="header-actions"><div class="font-controls" role="group" aria-label="正文字号"><button id="fontDecrease" type="button" title="缩小正文 · ⌘ −" aria-label="缩小正文">A−</button><button id="fontIncrease" type="button" title="放大正文 · ⌘ +" aria-label="放大正文">A+</button></div><button id="readerFavorite" class="icon-button" type="button" title="收藏会话" aria-label="收藏会话"><svg aria-hidden="true"><use href="#star"/></svg></button><button id="findButton" class="icon-button" type="button" title="查找当前部分 · ⌘ F" aria-label="查找当前部分 · ⌘ F"><svg aria-hidden="true"><use href="#search"/></svg></button><button id="detailsButton" class="icon-button" type="button" title="会话信息" aria-label="会话信息"><svg aria-hidden="true"><use href="#info"/></svg></button></div></header>
+      <div class="operation-bar"><span id="status" class="status" aria-live="polite">选择本地来源，开始阅读</span><button id="statusRetry" type="button" hidden>重试</button><button id="cancelCodexFolderScanButton" type="button" hidden>取消扫描</button><button id="cancelCodexReadButton" type="button" hidden>取消读取</button></div>
+      <nav id="transcriptPager" class="transcript-pager" aria-label="会话分段" hidden><button id="transcriptFirst" type="button" hidden>回到最初 ↑</button><button id="transcriptPrevious" type="button">← 较早消息</button><span id="transcriptPageStatus" role="status"></span><button id="transcriptNext" type="button">较新消息 →</button><button id="transcriptLatest" type="button" hidden>回到最新 ↓</button><button id="transcriptCancel" type="button" hidden>取消读取</button></nav>
+      <p id="transcriptReadWarning" class="transcript-warning" role="status" hidden></p>
+      <div id="inFileSearchToolbar" class="in-file-search-toolbar" hidden><svg aria-hidden="true"><use href="#search"/></svg><input id="inFileSearchInput" type="search" placeholder="查找当前部分…" aria-label="查找当前部分"><span id="inFileSearchCounter" aria-live="polite">0/0</span><button id="inFileSearchPrev" type="button" aria-label="上一个匹配">↑</button><button id="inFileSearchNext" type="button" aria-label="下一个匹配">↓</button><button id="findClose" class="icon-button" type="button" title="关闭查找" aria-label="关闭查找"><svg aria-hidden="true"><use href="#close"/></svg></button></div>
+      <div class="read-shell" tabindex="0" aria-label="会话正文">
+        <div id="largeSessionNotice" class="large-session-notice" hidden>这段会话较长，准备好后再展开。<button id="loadLargeSessionButton" type="button">展开会话</button></div>
+        <article id="readMount" class="read-view"></article>
+        <div class="reader-welcome"><div class="welcome-mark" aria-hidden="true">≋</div><p class="eyebrow">留一点空间，回看好对话</p><h2 id="welcomeTitle">好对话，值得再读一次。</h2><p id="welcomeHint">找回一个想法，重温一个答案。<br>按照自己的节奏，回看每一次对话。</p><button id="welcomeConnect" type="button" class="primary-action">选择本地来源</button><small>只读访问 · 聊天内容留在你的 Mac 上</small></div>
+      </div>
+      <button id="codexNewMessages" class="jump-latest" type="button" hidden>有新消息 · 回到最新 ↓</button>
+      <footer class="reader-footer"><span id="readerPosition">会话阅读器</span><span id="readerMode">本地阅读 · 只读</span></footer>
+    </main>
+  </div>
+  <dialog id="searchDialog" class="search-dialog" aria-labelledby="searchTitle">
+    <header class="panel-header"><h2 id="searchTitle">搜索对话</h2><button type="button" class="escape" data-close-dialog>Esc · 关闭</button></header>
+    <section id="codexLive" class="codex-live" hidden aria-label="完整会话搜索"><form id="codexSearchForm" class="codex-search-form"><input id="codexSearchInput" type="search" maxlength="256" placeholder="输入对话中的一句话…" aria-label="搜索完整会话"><select id="codexSearchScope" aria-label="搜索范围"><option value="all">全部未归档对话</option><option value="current">当前会话</option></select><button id="codexSearchSubmit" type="submit" class="primary-action">搜索</button><button id="codexSearchCancel" type="button" hidden>取消搜索</button></form><p id="codexSearchStatus" role="status"></p><div id="codexSearchResults" class="codex-search-results"></div></section>
+    <div id="librarySearch"><input id="globalSearchInput" type="search" placeholder="搜索库中所有会话…" aria-label="搜索 Markdown 库正文"><div id="globalSearchBanner" class="global-search-banner" hidden></div><div id="globalSearchResults" class="global-results"></div></div>
+    <p id="searchUnavailable" hidden>请先连接一个本地来源。</p><footer class="dialog-footer" id="searchScopeHint">搜索完整会话的提示词与最终回复</footer>
+  </dialog>
+  <dialog id="sourcesDialog" class="panel-dialog source-menu" aria-labelledby="sourcesTitle">
+    <header class="panel-header"><div><h2 id="sourcesTitle">本地来源</h2><p>连接你的对话，保留原始文件。</p></div><button type="button" class="icon-button" data-close-dialog aria-label="关闭来源面板"><svg aria-hidden="true"><use href="#close"/></svg></button></header>
+    <div class="panel-content source-menu-content">
+      <section class="source-card"><span class="source-badge">C</span><div><h3>Codex</h3><p>选择完整的 .codex 文件夹，读取未归档对话、名称与后续更新。自动化任务默认隐藏；数量不代表正在运行的会话。</p><button id="openCodexFolderButton" class="primary-action" type="button">选择 Codex 文件夹</button><button id="rescanCodexFolderButton" type="button" hidden>立即同步列表</button></div></section>
+      <section class="source-card"><span class="source-badge">M</span><div><h3>Markdown 会话库</h3><p>阅读已有的 Codex / Claude 导出记录。Claude 原生会话接入尚未提供。</p><button id="chooseLibraryButton" type="button">选择 Markdown 库</button><button id="backToLibraryButton" type="button" hidden>返回之前的库</button></div></section>
+      <details class="advanced-sources"><summary>单文件与导入工具</summary><p>单文件适合临时查看一段 Codex 记录。重新导入会写入所选 Markdown 库；Codex 文件夹模式下禁用。</p><button id="openCodexFileButton" type="button">打开 Codex 文件</button><button id="refreshButton" type="button">重新导入到 Markdown 库</button></details>
+      <p id="libraryPath" class="library-path">尚未选择来源</p><p class="privacy-note">启动时自动连接上次选择的来源；首次使用会尝试 ~/.codex。仅在此 Mac 保存目录位置，不复制聊天内容。</p><span id="refreshMount" hidden></span>
+    </div>
+  </dialog>
+  <dialog id="detailsDialog" class="panel-dialog" aria-labelledby="detailsTitle"><header class="panel-header"><h2 id="detailsTitle">会话信息</h2><button type="button" class="icon-button" data-close-dialog aria-label="关闭会话信息"><svg aria-hidden="true"><use href="#close"/></svg></button></header><div class="panel-content"><p>原始会话保持只读。长会话分段显示，完整正文搜索通过“搜索对话”使用。</p><div class="detail-actions"><button id="reloadCodexFileButton" type="button" hidden>重新读取当前会话</button><button id="reloadCodexFolderButton" type="button" hidden>重新读取当前会话</button></div><details class="diagnostics-panel"><summary>技术诊断与读取限制</summary><p id="folderSourceNotice" class="source-notice" role="status" hidden></p><div id="folderDiagnostics" class="folder-diagnostics" role="status" hidden></div><div id="directDiagnostics" class="direct-diagnostics" role="status" hidden></div></details></div></dialog>
+  <dialog id="settingsDialog" class="panel-dialog" aria-labelledby="settingsTitle"><header class="panel-header"><div><h2 id="settingsTitle">阅读设置</h2><p>把这里调整成舒服的阅读空间。</p></div><button type="button" class="icon-button" data-close-dialog aria-label="关闭设置"><svg aria-hidden="true"><use href="#close"/></svg></button></header><div class="panel-content">
+    <fieldset><legend>外观</legend><div class="setting-options"><button type="button" data-preference="theme" data-value="system">跟随系统</button><button type="button" data-preference="theme" data-value="light">浅色</button><button type="button" data-preference="theme" data-value="dark">深色</button></div></fieldset>
+    <fieldset><legend>正文字号 · ⌘ + / − 调节，⌘ 0 还原</legend><div class="setting-options"><button type="button" data-preference="font" data-value="small" title="小 · 14">14</button><button type="button" data-preference="font" data-value="medium" title="标准 · 16">16</button><button type="button" data-preference="font" data-value="large" title="大 · 18">18</button><button type="button" data-preference="font" data-value="xlarge">20</button><button type="button" data-preference="font" data-value="xxlarge">22</button><button type="button" data-preference="font" data-value="xxxlarge">24</button><button type="button" data-preference="font" data-value="xxxxlarge">26</button></div></fieldset>
+    <fieldset><legend>正文宽度</legend><div class="setting-options"><button type="button" data-preference="width" data-value="comfortable">舒适</button><button type="button" data-preference="width" data-value="wide">宽阔</button></div></fieldset>
+    <p class="privacy-note">设置只保存在这台 Mac。Codex 自动检查更新；阅读较早消息时保留位置，有新回复时显示提示。</p>
+  </div></dialog>
+    <script src="./lib/session-viewer/read-inline.js"></script>
+    <script src="./lib/session-viewer/read-user-preprocess.js"></script>
+    <script src="./lib/session-viewer/read-renderer.js"></script>
+    <script src="./lib/session-viewer/message-disclosure.js"></script>
+    <script src="./lib/session-viewer/image-lightbox.js"></script>
+    <script src="./lib/session-viewer/local-image-preview.js"></script>
+    <script src="./lib/session-viewer/conversation-presentation.js"></script>
+    <script src="./lib/session-viewer/structured-conversation.js"></script>
+    <script src="./lib/session-viewer/direct-session.js"></script>
+    <script src="./lib/session-viewer/read-search-text.js"></script>
+    <script src="./lib/session-viewer/refresh-result.js"></script>
+    <script src="./lib/session-viewer/large-session-guard.js"></script>
+    <script src="./lib/session-viewer/search-dom.js"></script>
+    <script src="./lib/session-viewer/search-index.js"></script>
+    <script src="./lib/session-viewer/in-file-search-toolbar.js"></script>
+    <script src="./lib/session-viewer/favorites.js"></script>
+    <script src="./lib/session-viewer/grouping.js"></script>
+    <script src="./lib/session-viewer/grouped-list-renderer.js"></script>
+    <script src="./lib/session-viewer/codex-folder-view.js"></script>
+    <script src="./lib/session-viewer/codex-live.js"></script>
+    <script src="./lib/session-viewer/operation-status.js"></script>
+    <script src="./lib/session-app.js"></script>
+    <script src="./lib/session-viewer/reader-shell.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

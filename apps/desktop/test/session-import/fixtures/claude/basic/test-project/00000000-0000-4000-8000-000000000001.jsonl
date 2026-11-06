@@ -1,0 +1,2 @@
+{"type":"user","timestamp":"2026-01-01T00:00:00.000Z","cwd":"/tmp/cwd","version":"1.0.0","sessionId":"00000000-0000-4000-8000-000000000001","message":{"content":"hello"}}
+{"type":"assistant","timestamp":"2026-01-01T00:00:01.000Z","message":{"content":[{"type":"text","text":"hi back"}]}}

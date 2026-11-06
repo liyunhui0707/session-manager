@@ -1,0 +1,76 @@
+name: Build unsigned release candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, for example v0.10.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      EXPECTED_ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.20.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Verify version, tag and native architecture
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const p = JSON.parse(fs.readFileSync("apps/desktop/package.json"));
+            if (!/^v\d+\.\d+\.\d+$/.test(process.env.RELEASE_TAG) || process.env.RELEASE_TAG !== `v${p.version}` || process.arch !== process.env.EXPECTED_ARCH) process.exit(1);
+          '
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "$RELEASE_TAG^{commit}")"
+      - name: Audit public source
+        run: python3 tools/release/audit-public-tree.py
+      - name: Verify release tools
+        run: node --test tools/release/*.test.mjs
+      - name: Install locked dependencies
+        working-directory: apps/desktop
+        run: npm ci
+      - name: Verify application
+        working-directory: apps/desktop
+        run: |
+          npm run test:ci
+          npm run audit:prod
+      - name: Build unsigned DMG and ZIP
+        working-directory: apps/desktop
+        run: npm run dist:mac
+      - name: Record checksums and source
+        run: |
+          node tools/release/release-metadata.mjs apps/desktop/dist "${RELEASE_TAG#v}" "$EXPECTED_ARCH"
+          git rev-parse HEAD > apps/desktop/dist/SOURCE-COMMIT.txt
+      - name: Retain candidates for packaged acceptance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unsigned-mac-${{ matrix.arch }}
+          path: |
+            apps/desktop/dist/*.dmg
+            apps/desktop/dist/*.zip
+            apps/desktop/dist/SHA256SUMS-*.txt
+            apps/desktop/dist/SOURCE-COMMIT.txt
+          if-no-files-found: error
+          retention-days: 14

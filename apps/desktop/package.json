@@ -1,0 +1,78 @@
+{
+  "name": "ai-session-manager",
+  "version": "0.10.1",
+  "productName": "AI Session Manager",
+  "description": "A local, read-only Codex conversation reader for macOS",
+  "main": "main.js",
+  "scripts": {
+    "build:native": "node tools/build-codex-source-helper.mjs",
+    "pretest": "npm run build:native",
+    "dev": "electron .",
+    "predev": "npm run build:native",
+    "test": "node --test test/session-app/*.test.js test/session-library/*.test.js test/session-import/*.test.mjs test/session-viewer/*.test.js",
+    "test:ci": "node tools/check-test-baseline.mjs",
+    "test:session-app": "node --test test/session-app/*.test.js test/session-library/*.test.js",
+    "test:session-import": "node --test test/session-import/*.test.mjs",
+    "test:session-viewer": "node --test test/session-viewer/*.test.js",
+    "benchmark:catalog": "node tools/benchmark-codex-catalog.mjs",
+    "audit:prod": "npm audit --omit=dev --audit-level=low",
+    "prepack": "npm run build:native && npm run build:icon",
+    "pack": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --dir",
+    "predist:mac": "npm run build:native && npm run build:icon",
+    "dist:mac": "node tools/dist-mac.mjs",
+    "build:icon": "node tools/build-app-icon.mjs"
+  },
+  "author": "liyunhui0707",
+  "license": "MIT",
+  "build": {
+    "appId": "com.aisessionmanager.desktop",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "reader.css",
+      "lib/codex-conversation.js",
+      "lib/codex-file.js",
+      "lib/codex-file-ipc.js",
+      "lib/codex-page*.js",
+      "lib/codex-source-catalog.js",
+      "lib/codex-source-traversal.js",
+      "lib/codex-folder-ipc.js",
+      "lib/session-source-state.js",
+      "lib/session-app.js",
+      "lib/session-import-ipc.js",
+      "lib/session-library*.js",
+      "lib/session-title.js",
+      "lib/session-viewer/**/*.js",
+      "tools/session-import/**/*.mjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/native/codex-source-helper",
+        "to": "bin/codex-source-helper"
+      }
+    ],
+    "mac": {
+      "identity": null,
+      "minimumSystemVersion": "12.0",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "icon": "build/app.icns"
+    },
+    "artifactName": "AI-Session-Manager-${version}-mac-${arch}.${ext}"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.7"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liyunhui0707/session-manager.git"
+  },
+  "homepage": "https://session-manager.outerepoch3.chatgpt.site",
+  "bugs": {
+    "url": "https://github.com/liyunhui0707/session-manager/issues"
+  }
+}

@@ -1,0 +1,31 @@
+name: Problem report / 问题反馈
+description: Report a reproducible problem using synthetic examples.
+body:
+  - type: markdown
+    attributes:
+      value: "请勿上传真实聊天、凭据、完整本机路径或未脱敏截图。Do not include private conversations or credentials."
+  - type: input
+    id: version
+    attributes:
+      label: App version / 应用版本
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: macOS version and chip / 系统版本与芯片
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and expected result / 复现步骤与预期
+      description: Use a minimal invented example, not a real chat export.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Actual result / 实际结果
+    validations:
+      required: true

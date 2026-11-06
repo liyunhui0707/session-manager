@@ -1,0 +1,51 @@
+name: AI Session Manager CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify-session-manager:
+    # Pin Intel while hosted macOS ARM64 capacity prevents jobs from starting.
+    # ARM64 packaged-app validation remains a separate local delivery check.
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/desktop
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.20.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit public tree and verify release tools
+        working-directory: .
+        run: |
+          python3 tools/release/audit-public-tree.py
+          node --test tools/release/*.test.mjs
+
+      - name: Audit production dependencies
+        run: npm run audit:prod
+
+      - name: Run tests and enforce baseline
+        run: npm run test:ci
+
+      - name: Package unsigned macOS app
+        run: npm run pack

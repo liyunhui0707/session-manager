@@ -1,0 +1,4 @@
+{"type":"response_item","timestamp":"2026-01-01T00:00:00.000Z","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"patch this"}]}}
+{"type":"response_item","timestamp":"2026-01-01T00:00:01.000Z","payload":{"type":"function_call","name":"apply_patch","arguments":"{\"input\":\"*** Update File: /tmp/x.txt\"}","call_id":"call-3"}}
+{"type":"event_msg","timestamp":"2026-01-01T00:00:01.500Z","payload":{"type":"patch_apply_end","call_id":"call-3","success":false}}
+{"type":"response_item","timestamp":"2026-01-01T00:00:02.000Z","payload":{"type":"function_call_output","call_id":"call-3","output":"patch failed: hunk did not apply"}}
