@@ -41,8 +41,10 @@ jobs:
           python3 tools/release/audit-public-tree.py
           node --test tools/release/*.test.mjs
 
-      - name: Audit production dependencies
-        run: npm run audit:prod
+      - name: Audit runtime and build dependencies
+        run: |
+          npm run audit:prod
+          npm run audit:release
 
       - name: Run tests and enforce baseline
         run: npm run test:ci

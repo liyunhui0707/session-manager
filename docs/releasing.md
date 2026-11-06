@@ -21,7 +21,9 @@ Developer ID signing, notarization and a real signed upgrade test are available.
    not Git history, ignored files or user stores. It does not guarantee complete
    secret detection. Public history and commit metadata need separate review.
 3. Run `node --test tools/release/*.test.mjs`. In `apps/desktop`, run
-   `npm run test:ci`, `npm run audit:prod`, and `npm run dist:mac`.
+   `npm run test:ci`, `npm run audit:prod`, `npm run audit:release`, and `npm run dist:mac`.
+   The full-tree audit includes Electron: npm lists it as a development dependency,
+   but its runtime ships in the App. A production-only audit cannot cover it.
 4. Run the packaged synthetic smoke harness. Record version, OS/CPU, exact ASAR
    hash, test result and exit status. Perform the native download/install checks
    in `test-manual.md` separately. An unavailable second Mac must be reported.
@@ -36,8 +38,12 @@ runs tests and builds on native ARM and Intel runners. It retains artifacts for
 14 days and has no release publication permission. Candidate builds are not
 proof of interactive installation or minimum-OS acceptance.
 
-Local packaging uses the already installed Electron runtime and current host
-architecture. `dist:mac` rejects cross-build arguments so a host-native helper
+Local packaging prepares the locked Electron runtime automatically using its
+checksum-validating installer. A fresh checkout needs only `npm ci`, then
+`npm run dist:mac`; the first build may download Electron and needs network
+access. Installation failure stops the build. Existing versioned DMG/ZIP files
+are refused before packaging; move them aside when intentionally rebuilding.
+`dist:mac` uses the current host architecture and rejects cross-build arguments so a host-native helper
 cannot silently ship in the wrong architecture bundle.
 
 ## Publish downloads
@@ -64,7 +70,7 @@ The canonical website source is `website/public`; `.openai/hosting.json` under
 `website/public`. No build dependencies, analytics or remote fonts are required.
 
 After publishing a release, update the website's version, exact download URLs
-and release summary in the same reviewed change. The general release/changelog
+and release summary in a reviewed change. The general release/changelog
 links lead to GitHub. Verify each exact download URL and mobile/desktop layout.
 A Sites deployment uses an isolated copy of **only** the website directory so
 private application history cannot be uploaded through the site source remote.

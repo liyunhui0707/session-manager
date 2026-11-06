@@ -1,0 +1,57 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const script = fileURLToPath(new URL('../../apps/desktop/tools/dist-mac.mjs', import.meta.url));
+function fixture(installFailure = false) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asm-dist-test-'));
+  for (const dir of ['tools', 'node_modules/electron', 'node_modules/electron-builder', 'dist']) {
+    fs.mkdirSync(path.join(root, dir), { recursive: true });
+  }
+  fs.copyFileSync(script, path.join(root, 'tools/dist-mac.mjs'));
+  fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ version: '0.0.1', productName: 'Synthetic Reader' }));
+  fs.writeFileSync(path.join(root, 'node_modules/electron/install.js'), installFailure
+    ? 'process.exit(72);'
+    : `require('node:fs').mkdirSync('node_modules/electron/dist');`);
+  // Stop before platform archiving tools; the real packaging entry point must
+  // prepare a fresh runtime before invoking the builder.
+  fs.writeFileSync(path.join(root, 'node_modules/electron-builder/cli.js'), `
+    const fs = require('node:fs');
+    fs.writeFileSync('builder-invoked', 'yes');
+    process.exit(fs.existsSync('node_modules/electron/dist') ? 73 : 74);
+  `);
+  return root;
+}
+function run(root, args = []) {
+  return spawnSync(process.execPath, [path.join(root, 'tools/dist-mac.mjs'), ...args], { encoding: 'utf8' });
+}
+const mac = { skip: process.platform !== 'darwin' };
+test('fresh distribution prepares Electron before running the builder', mac, () => {
+  const root = fixture();
+  assert.equal(run(root).status, 73);
+  assert.ok(fs.existsSync(path.join(root, 'node_modules/electron/dist')));
+});
+test('runtime installation failure stops packaging', mac, () => {
+  const root = fixture(true);
+  assert.equal(run(root).status, 72);
+  assert.equal(fs.existsSync(path.join(root, 'builder-invoked')), false);
+});
+test('existing release assets are refused before any build work', mac, () => {
+  const root = fixture();
+  const asset = path.join(root, 'dist', `AI-Session-Manager-0.0.1-mac-${process.arch}.zip`);
+  fs.writeFileSync(asset, 'previous candidate');
+  const result = run(root);
+  assert.match(result.stderr, /Artifact already exists/);
+  assert.equal(fs.readFileSync(asset, 'utf8'), 'previous candidate');
+  assert.equal(fs.existsSync(path.join(root, 'builder-invoked')), false);
+  assert.equal(fs.existsSync(path.join(root, 'node_modules/electron/dist')), false);
+});
+test('cross-build arguments cannot start runtime preparation', mac, () => {
+  const root = fixture();
+  assert.match(run(root, ['--x64']).stderr, /no cross-build arguments/);
+  assert.equal(fs.existsSync(path.join(root, 'builder-invoked')), false);
+});
