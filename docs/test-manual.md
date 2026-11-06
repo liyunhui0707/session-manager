@@ -16,9 +16,11 @@ Use invented conversations and a fresh profile. Do not open personal chat stores
 ## Distribution (separate evidence)
 
 - Record OS, architecture, package version, source commit and SHA-256.
+- Verify both the assembled App and the copies extracted from ZIP/DMG with `node apps/desktop/tools/verify-mac-bundle.mjs '/path/to/App.app'`. This checks signature integrity, not notarization or Gatekeeper acceptance.
 - Download the actual published artifact on a second Mac; compare checksum.
 - Mount DMG, drag App to Applications, eject, and launch the installed copy.
 - Record actual macOS quarantine/Gatekeeper behavior; do not claim notarization for an unsigned package.
+- Stop on a damaged-app warning. Preserve quarantine and record the signature diagnostic; never remove safety attributes or disable Gatekeeper to obtain a passing result.
 - Replace a normally exited older installation and confirm local preferences survive. Never overwrite a running app.
 - Verify CPU architecture for both helper and runtime. Do not extrapolate Apple Silicon evidence to Intel.
 - Check clean exit and no candidate process left behind.

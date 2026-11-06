@@ -13,6 +13,8 @@ function fixture(installFailure = false) {
     fs.mkdirSync(path.join(root, dir), { recursive: true });
   }
   fs.copyFileSync(script, path.join(root, 'tools/dist-mac.mjs'));
+  const verifier = path.join(path.dirname(script), 'verify-mac-bundle.mjs');
+  if (fs.existsSync(verifier)) fs.copyFileSync(verifier, path.join(root, 'tools/verify-mac-bundle.mjs'));
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ version: '0.0.1', productName: 'Synthetic Reader' }));
   fs.writeFileSync(path.join(root, 'node_modules/electron/install.js'), installFailure
     ? 'process.exit(72);'
@@ -54,4 +56,23 @@ test('cross-build arguments cannot start runtime preparation', mac, () => {
   const root = fixture();
   assert.match(run(root, ['--x64']).stderr, /no cross-build arguments/);
   assert.equal(fs.existsSync(path.join(root, 'builder-invoked')), false);
+});
+test('a successful builder with an invalid app signature cannot produce release archives', mac, () => {
+  const root = fixture();
+  const app = path.join(root, 'dist', process.arch === 'arm64' ? 'mac-arm64' : 'mac', 'Synthetic Reader.app');
+  fs.mkdirSync(path.join(app, 'Contents/MacOS'), { recursive: true });
+  fs.mkdirSync(path.join(app, 'Contents/Resources'));
+  fs.copyFileSync('/usr/bin/true', path.join(app, 'Contents/MacOS/reader'));
+  fs.writeFileSync(path.join(app, 'Contents/Info.plist'), `<?xml version="1.0"?><plist version="1.0"><dict>
+    <key>CFBundleExecutable</key><string>reader</string>
+    <key>CFBundleIdentifier</key><string>test.synthetic.reader</string>
+    <key>CFBundlePackageType</key><string>APPL</string></dict></plist>`);
+  fs.writeFileSync(path.join(app, 'Contents/Resources/body.txt'), 'synthetic');
+  fs.writeFileSync(path.join(root, 'node_modules/electron-builder/cli.js'), 'process.exit(0);');
+  const result = run(root);
+  assert.notEqual(result.status, 0, result.stdout);
+  assert.match(result.stderr, /Bundle signature verification failed/);
+  for (const extension of ['zip', 'dmg']) {
+    assert.equal(fs.existsSync(path.join(root, 'dist', `AI-Session-Manager-0.0.1-mac-${process.arch}.${extension}`)), false);
+  }
 });
