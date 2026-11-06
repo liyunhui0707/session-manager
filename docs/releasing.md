@@ -51,7 +51,7 @@ cannot silently ship in the wrong architecture bundle.
 Generate checksums from exact-version files, never a broad directory glob:
 
 ```sh
-node tools/release/release-metadata.mjs apps/desktop/dist 0.10.1 arm64
+node tools/release/release-metadata.mjs apps/desktop/dist 0.10.2 arm64
 ```
 
 Create a **draft** GitHub Release for the verified tag. Upload only the reviewed
