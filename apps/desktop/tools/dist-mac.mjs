@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import { verifyMacBundle } from './verify-mac-bundle.mjs';
 
 if (process.platform !== 'darwin' || !['arm64', 'x64'].includes(process.arch)) {
   throw Error('Distribution requires an Apple Silicon or Intel Mac');
@@ -35,6 +36,7 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 // Native macOS tools avoid extra archive/DMG helper downloads. Retain staging
 // after failures for diagnosis; never remove arbitrary files as part of a build.
 const app = path.join(root, 'dist', process.arch === 'arm64' ? 'mac-arm64' : 'mac', `${pkg.productName}.app`);
+verifyMacBundle(app);
 const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'asm-dmg-'));
 fs.chmodSync(stage, 0o700);
 const commands = [
@@ -47,4 +49,4 @@ for (const [command, args] of commands) {
   const r = spawnSync(command, args, { stdio: 'inherit', timeout: 300000 });
   if (r.error || r.status !== 0) throw r.error || Error(`Packaging failed: ${command}`);
 }
-console.log(`Unsigned release artifacts: ${prefix}.{dmg,zip}`);
+console.log(`Ad-hoc signed, unnotarized release artifacts: ${prefix}.{dmg,zip}`);

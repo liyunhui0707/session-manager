@@ -7,7 +7,9 @@ there after the initial publication. Never push the original private development
 repository or archive refs into it. Public commits use a maintainer's GitHub
 noreply address; no global Git identity change is required.
 
-The current channel offers unsigned, unnotarized Apple Silicon DMG and ZIP files.
+The channel does not use Developer ID or notarization. Starting with 0.10.3,
+complete ad-hoc bundle signatures are required for DMG and ZIP files;
+they seal resources but do not establish a trusted developer identity.
 Intel builds are candidates until architecture-specific GUI acceptance is recorded.
 Do not publish an update manifest or advertise in-app update installation before
 Developer ID signing, notarization and a real signed upgrade test are available.
@@ -46,12 +48,22 @@ are refused before packaging; move them aside when intentionally rebuilding.
 `dist:mac` uses the current host architecture and rejects cross-build arguments so a host-native helper
 cannot silently ship in the wrong architecture bundle.
 
+`pack` and `dist:mac` verify the assembled App and bundled native helper using
+`codesign --verify --deep --strict`. A signature failure stops distribution before
+creating either archive. Do not disable signing with `mac.identity: null`: the
+runtime's linker signature is not a sealed application. Keep the ad-hoc identity
+(`-`) and Electron's required library-loading entitlements for this channel.
+Ad-hoc validation does not prove Gatekeeper acceptance. After packaging, extract
+the ZIP and mount the DMG, verify each contained App, then test a real browser
+download with quarantine retained on another Mac. A damaged-app alert blocks
+acceptance; do not remove quarantine or disable system protection to pass it.
+
 ## Publish downloads
 
 Generate checksums from exact-version files, never a broad directory glob:
 
 ```sh
-node tools/release/release-metadata.mjs apps/desktop/dist 0.10.2 arm64
+node tools/release/release-metadata.mjs apps/desktop/dist 0.10.3 arm64
 ```
 
 Create a **draft** GitHub Release for the verified tag. Upload only the reviewed

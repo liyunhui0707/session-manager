@@ -1,6 +1,6 @@
 {
   "name": "ai-session-manager",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "productName": "AI Session Manager",
   "description": "A local, read-only Codex conversation reader for macOS",
   "main": "main.js",
@@ -19,6 +19,7 @@
     "audit:release": "npm audit --audit-level=high",
     "prepack": "npm run build:native && npm run build:icon",
     "pack": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --dir",
+    "postpack": "node tools/verify-mac-bundle.mjs",
     "predist:mac": "npm run build:native && npm run build:icon",
     "dist:mac": "node tools/dist-mac.mjs",
     "build:icon": "node tools/build-app-icon.mjs"
@@ -56,7 +57,9 @@
       }
     ],
     "mac": {
-      "identity": null,
+      "identity": "-",
+      "notarize": false,
+      "binaries": ["Contents/Resources/bin/codex-source-helper"],
       "minimumSystemVersion": "12.0",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "icon": "build/app.icns"
