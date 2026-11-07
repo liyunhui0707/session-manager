@@ -62,3 +62,12 @@ test('remembers last selected source and Codex root without storing transcript c
   assert.equal(fs.statSync(settingsPath).mode & 0o777, 0o600);
   await assert.rejects(() => restored.setCodexPath('relative'), /absolute/);
 });
+
+test('concurrent source preferences preserve both paths and the last choice', async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'asm-window-settings-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const settings = createLibrarySettings({ settingsPath: path.join(root, 'settings.json') });
+  await Promise.all([settings.setLibraryPath('/synthetic/library'), settings.setCodexPath('/synthetic/codex')]);
+  assert.equal(await settings.getLibraryPath(), '/synthetic/library');
+  assert.deepEqual(await settings.getSource(), { kind: 'codex', path: '/synthetic/codex' });
+});

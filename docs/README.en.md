@@ -12,11 +12,17 @@ No app account, AI service, analytics, or chat upload is required. Browsing and 
 
 The downloadable build supports Apple Silicon Macs running macOS 12 or later. Download the DMG from GitHub Releases and drag AI Session Manager into Applications. Intel users can build from source; an accepted Intel binary is not currently offered.
 
-Version **0.10.3** fixes the bundle-signature defect in 0.10.2 and passed a browser-download, installation and relaunch check on another Apple Silicon Mac.
+Version **0.11.0** adds independent reader windows for conversations on different macOS desktops.
 
 **The release is not Developer ID signed or notarized.** macOS may block the first launch. Only if you trust this repository, use the system's Privacy & Security → Open Anyway option. Do not disable Gatekeeper globally. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
 First launch tries `~/.codex`; later launches restore your source selection. Updates are manual: quit the app, download the newer version, and replace the application. In-app update installation is not available yet.
+
+## Multiple windows
+
+Use **⌘N**, the sidebar **+** button, or **File → New Window** to open another reader with the same source. Right-click a conversation to open it in a new window. Sources, navigation, search and reading positions are independent; favorites and appearance are shared. Move windows to different desktops using macOS Mission Control.
+
+Closing a window leaves the others open; quitting closes all windows. The next launch restores the source, not the previous window layout.
 
 ## Build
 

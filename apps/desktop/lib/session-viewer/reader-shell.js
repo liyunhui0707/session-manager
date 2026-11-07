@@ -58,6 +58,7 @@ function createReaderShell({ document: doc, app, storage }) {
     text('listHeading', favoritesOnly ? '收藏会话' : '最近会话');
   }
   function sync() {
+    doc.title = `${byId('readTitle').textContent || '会话阅读器'} — Session Manager`;
     const state = app.getState(), folder = state.sourceMode === 'folder', library = state.sourceMode === 'library';
     const nextKey = `${state.sourceMode}:${state.folder?.sourceId || state.libraryPath || ''}`;
     if (nextKey !== sourceKey) {
@@ -133,7 +134,13 @@ function createReaderShell({ document: doc, app, storage }) {
     }
   });
   applyPreferences(); doc.documentElement.dataset.find = 'closed'; sync();
-  return { sync, setPreference };
+  return { sync, setPreference,
+    refreshPreferences() {
+      try { preferences = normalizePreferences(JSON.parse(storage.getItem(PREFERENCE_KEY))); }
+      catch { preferences = normalizePreferences(); }
+      applyPreferences();
+    },
+  };
 }
 const api = { createReaderShell, normalizePreferences };
 if (typeof module !== 'undefined' && module.exports) module.exports = api;

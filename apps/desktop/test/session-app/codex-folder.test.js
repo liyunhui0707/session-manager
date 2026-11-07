@@ -87,3 +87,19 @@ test('folder mode browses metadata, loads by opaque ID, disables Refresh, and re
   assert.equal(h.elements.librarySearch.hidden, false);
   assert.equal(h.elements.refreshButton.disabled, false);
 });
+
+test('new-window bootstrap resolves a stable session ID in its own catalog', async () => {
+  const h = harness();
+  h.api.restoreCodexFolder = async () => ({ ok: true, catalog: h.catalog });
+  assert.equal(await h.app.initializeWindow({ target: { kind: 'folder', id: h.catalog.entries[0].sessionId } }), true);
+  assert.equal(h.calls.folderLoads, 1);
+  assert.equal(h.app.getState().folder.selectedEntryId, ENTRY_ID);
+});
+
+test('new-window bootstrap explains a removed target without opening another session', async () => {
+  const h = harness();
+  h.api.restoreCodexFolder = async () => ({ ok: true, catalog: h.catalog });
+  assert.equal(await h.app.initializeWindow({ target: { kind: 'folder', id: 'removed' } }), false);
+  assert.equal(h.calls.folderLoads, 0);
+  assert.match(h.elements.status.textContent, /此会话已移除/);
+});

@@ -39,10 +39,12 @@ test('preload exposes only narrow session-manager calls and passes only an opaqu
     'chooseLibrary',
     'codexSearchProgress',
     'getSelectedLibrary',
+    'getWindowInitial',
     'loadCodexCatalogEntry',
     'loadSessions',
     'moreCodexSearch',
     'moveCodexPage',
+    'newWindow',
     'openCodexSearchHit',
     'readCodexImage',
     'refreshSessions',
@@ -51,6 +53,7 @@ test('preload exposes only narrow session-manager calls and passes only an opaqu
     'rescanCodexFolder',
     'restoreCodexFolder',
     'searchCodexConversations',
+    'showSessionMenu',
     'syncCodexConversation',
   ]);
 
@@ -76,6 +79,10 @@ test('preload exposes only narrow session-manager calls and passes only an opaqu
   const image = { readerId: '11111111-1111-4111-8111-111111111111', page: 1, message: 0, image: 0, size: 'preview' };
   await exposed.sessionApi.readCodexImage(image, '/ignored');
 
+  await exposed.sessionApi.getWindowInitial('/ignored');
+  await exposed.sessionApi.newWindow('/ignored');
+  const target = { kind: 'folder', id: '11111111-1111-4111-8111-111111111111' };
+  await exposed.sessionApi.showSessionMenu(target, '/ignored');
   assert.deepEqual(invocations, [
     { channel: 'sessionLibrary:get-selected', args: [] },
     { channel: 'sessionLibrary:choose', args: [] },
@@ -97,5 +104,8 @@ test('preload exposes only narrow session-manager calls and passes only an opaqu
     { channel: 'codexConversation:cancel-search', args: [] },
     { channel: 'codexConversation:search-progress', args: [] },
     { channel: 'codexImage:read', args: [image] },
+    { channel: 'sessionWindow:initial', args: [] },
+    { channel: 'sessionWindow:new', args: [] },
+    { channel: 'sessionWindow:menu', args: [target] },
   ]);
 });

@@ -31,8 +31,9 @@ test('production choose, automatic sync and full-text search exclude reviews and
   vm.runInNewContext(fs.readFileSync(path.join(appRoot, 'main.js'), 'utf8'), {
     __dirname: appRoot, process: { platform: 'darwin' }, require(id) {
       if (id === 'electron') return { BrowserWindow, app: { whenReady: () => Promise.resolve(), getPath: () => root, on() {} },
+        Menu: { setApplicationMenu() {}, buildFromTemplate: value => value },
         ipcMain: { handle: (key, fn) => handlers.set(key, fn) }, dialog: { showOpenDialog: async () => ({ canceled: false, filePaths: [root] }) } };
-      if (id === './lib/session-library-settings') return { createLibrarySettings: () => ({ getLibraryPath: async () => null, setLibraryPath() {} }) };
+      if (id === './lib/session-library-settings') return { createLibrarySettings: () => ({ getSource: async () => ({ kind: 'codex', path: null }), getLibraryPath: async () => null, setLibraryPath() {} }) };
       return mainRequire(id);
     },
   });
@@ -63,20 +64,21 @@ test('production main accepts only the current window main frame at the exact in
   const electron = {
     BrowserWindow,
     app: { whenReady: () => Promise.resolve(), getPath: () => '/synthetic/profile', on() {} },
-    ipcMain: { handle: (channel, handler) => handlers.set(channel, handler) },
+    Menu: { setApplicationMenu() {}, buildFromTemplate: value => value },
+        ipcMain: { handle: (channel, handler) => handlers.set(channel, handler) },
     dialog: { showOpenDialog: async () => { touched++; return { canceled: true }; } },
   };
   vm.runInNewContext(fs.readFileSync(path.join(appRoot, 'main.js'), 'utf8'), {
     __dirname: appRoot, process: { platform: 'darwin' },
     require(id) {
       if (id === 'electron') return electron;
-      if (id === './lib/session-library-settings') return { createLibrarySettings: () => ({ getLibraryPath: async () => { touched++; return null; }, setLibraryPath() {} }) };
+      if (id === './lib/session-library-settings') return { createLibrarySettings: () => ({ getSource: async () => ({ kind: 'codex', path: null }), getLibraryPath: async () => { touched++; return null; }, setLibraryPath() {} }) };
       if (id === './lib/session-library') return { loadSessionLibrary() { throw new Error('No filesystem reads allowed'); } };
       return mainRequire(id);
     },
   });
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(handlers.size, 21);
+  assert.equal(handlers.size, 24);
   for (const handler of handlers.values()) {
     for (const event of [{}, { sender: {}, senderFrame: window.webContents.mainFrame }, { sender: window.webContents, senderFrame: { url: indexUrl } }]) {
       assert.equal((await handler(event)).reason, 'invalid-request');

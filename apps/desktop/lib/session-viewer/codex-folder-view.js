@@ -66,6 +66,7 @@ function createCodexFolderView(options) {
       const row = doc.createElement('div');
       row.className = entry.entryId === selectedEntryId ? 'session-row session-row--active' : 'session-row';
       row.setAttribute('role', 'button');
+      row.setAttribute('data-entry-id', entry.entryId);
       row.setAttribute('tabindex', '0');
       const star = doc.createElement('button');
       star.className = isFavorite(entry.sessionId) ? 'session-star session-star--on' : 'session-star';
@@ -270,6 +271,7 @@ function createCodexFolderView(options) {
       directView.show(result.session, { sourceLabel: 'Codex 文件夹', cwd: current?.entries.find(e => e.entryId === selectedEntryId)?.cwd || '' }); render();
     },
     setFavoritesOnly(value) { favoritesOnly = !!value; page = 0; render(); },
+    refreshFavorites() { favorites?.reload(); if (current) render(); },
     openEntry, reload, filter, toggleFavorite, isFavorite, clear, render,
     isActive: () => current !== null,
     isBusy: () => scanning || loading,

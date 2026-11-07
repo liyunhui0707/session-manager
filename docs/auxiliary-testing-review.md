@@ -10,4 +10,6 @@ Use a separate Mac to check a release candidate with an explicitly authorized te
 
 A harness pass covers the tested app interactions. It does not prove Finder installation, download quarantine behavior, minimum-OS compatibility, Intel compatibility, or signed auto-update. Record those checks separately, and label untested items.
 
+For native multi-window acceptance, add `--manual-shortcut`. When the printed evidence directory contains `shortcut-ready`, press ⌘N in the synthetic test window. At `desktop-check-ready`, the harness pauses with two synthetic readers for native window and Spaces checks. Keep those two windows open, restore them from full screen after checking, and create an empty `desktop-check-continue` file in that evidence directory to resume. Each manual checkpoint allows 15 minutes; the overall run allows 30 minutes. Record the observed native actions separately: the harness result alone does not prove a Spaces check. Ensure desktop tools target the isolated test instance, not a daily app with the same bundle identifier.
+
 External reviewers may receive only an explicitly authorized minimal source snapshot, synthetic tests and a bounded resource budget. Never send chats or credentials. Preserve findings and addressed issues; do not equate a model's approval with executed tests.

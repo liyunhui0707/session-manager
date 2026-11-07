@@ -202,3 +202,23 @@ test('T-S5-5c controller swallows quota error on toggle', () => {
   assert.equal(result, true);
   assert.equal(ctrl.isFavorite('a/b.md'), true);
 });
+
+test('window controllers merge sequential favorites and reload removals from shared storage', () => {
+  const storage = makeMockStorage();
+  const a = Favorites.createFavoritesController({ storage });
+  const b = Favorites.createFavoritesController({ storage });
+  a.toggle('first'); b.toggle('second');
+  a.reload();
+  assert.deepEqual([...a.getAll()].sort(), ['first', 'second']);
+  b.toggle('first'); a.reload();
+  assert.equal(a.isFavorite('first'), false);
+  assert.equal(a.isFavorite('second'), true);
+});
+
+test('failed persistence retains consecutive in-memory favorite changes', () => {
+  const storage = makeMockStorage();
+  const ctrl = Favorites.createFavoritesController({ storage });
+  storage._setThrowOnSet(true);
+  ctrl.toggle('first'); ctrl.toggle('second'); ctrl.reload();
+  assert.deepEqual([...ctrl.getAll()], ['first', 'second']);
+});

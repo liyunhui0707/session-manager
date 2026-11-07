@@ -325,3 +325,11 @@ test('directional navigation lands at the shared boundary and first/latest remai
   await view.move('first'); assert.equal(parent.scrollTop, 0);
   assert.deepEqual(calls, ['previous', 'next', 'latest', 'first']);
 });
+
+test('a new direct-file window opens its inherited file without a file chooser', async () => {
+  const h = harness();
+  h.api.chooseCodexFile = async () => { throw Error('must not prompt again'); };
+  assert.equal(await h.app.initializeWindow({ direct: true }), true);
+  assert.equal(h.app.getState().sourceMode, 'codex');
+  assert.ok(h.elements.readMount.firstChild);
+});
