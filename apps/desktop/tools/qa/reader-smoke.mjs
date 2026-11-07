@@ -68,7 +68,7 @@ if (longMode) {
   zstdPath = longPath + '.zst';
   await pipeline(fs.createReadStream(longPath), createZstdCompress(), fs.createWriteStream(zstdPath, { flags: 'wx', mode: 0o600 }));
 }
-fs.writeFileSync(path.join(base, 'paths.json'), JSON.stringify({ root, id: entries[0].id, longPath, zstdPath, lastMessage, resources, soak }));
+fs.writeFileSync(path.join(base, 'paths.json'), JSON.stringify({ root, id: entries[0].id, longPath, zstdPath, lastMessage, resources, soak, manualShortcut: process.argv.includes('--manual-shortcut') }));
 const hash = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 function snapshot(dir) {
   const rows = [];
@@ -131,7 +131,7 @@ child.stderr.on('data', d => {
     } catch { failure = 'inspector-bootstrap'; terminate(); }
   });
 });
-const deadlineMs = soak ? 960000 : 180000;
+const deadlineMs = process.argv.includes('--manual-shortcut') ? 1800000 : soak ? 960000 : 180000;
 const timeout = setTimeout(() => { watchdog = true; terminate(); }, deadlineMs);
 const killTimer = setTimeout(() => { try { process.kill(-child.pid, 'SIGKILL'); } catch {} }, deadlineMs + 3000);
 const resultPath = path.join(base, 'qa-result.json');
@@ -147,7 +147,7 @@ child.on('close', (code, signal) => {
   let remaining = false;
   try { process.kill(-child.pid, 0); remaining = true; } catch {}
   const passed = code === 0 && signal === null && !failure && !watchdog && !remaining && unchanged
-    && result?.packaged === true && result.errors?.length === 0 && result.checks?.length === ((longMode ? 160 : 146) + (resources ? 7 : 0) + (soak ? 4 : 0));
+    && result?.packaged === true && result.errors?.length === 0 && result.checks?.length === ((longMode ? 178 : 164) + (resources ? 7 : 0) + (soak ? 4 : 0));
   const report = { passed, code, signal, failure, watchdog, remaining, unchanged,
     durationMs: Date.now() - started, node: process.version, platform: process.platform, arch: process.arch,
     asarSha256: hash(asar), bootstrapSha256: hash(bootstrap), result };

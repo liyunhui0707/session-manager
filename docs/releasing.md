@@ -63,7 +63,7 @@ acceptance; do not remove quarantine or disable system protection to pass it.
 Generate checksums from exact-version files, never a broad directory glob:
 
 ```sh
-node tools/release/release-metadata.mjs apps/desktop/dist 0.10.3 arm64
+node tools/release/release-metadata.mjs apps/desktop/dist 0.11.0 arm64
 ```
 
 Create a **draft** GitHub Release for the verified tag. Upload only the reviewed

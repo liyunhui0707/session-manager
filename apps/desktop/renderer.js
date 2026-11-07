@@ -79,5 +79,24 @@ window.addEventListener('DOMContentLoaded', () => {
   const poll = setInterval(() => { if (!document.hidden) void live.tick(); }, 5000);
   window.addEventListener('focus', () => { void live.tick(); });
   window.addEventListener('beforeunload', () => { clearInterval(poll); shellObserver.disconnect(); live.dispose(); });
-  void app.initialize();
+  byId('newWindowButton').addEventListener('click', () => { void window.sessionApi.newWindow(); });
+  function sessionMenu(event) {
+    const row = event.target.closest?.('.session-row');
+    if (!row) return;
+    event.preventDefault();
+    const entry = row.getAttribute('data-entry-id');
+    const id = entry || row.getAttribute('data-note-id');
+    if (id) void window.sessionApi.showSessionMenu({ kind: entry ? 'folder' : 'library', id });
+  }
+  byId('sessionList').addEventListener('contextmenu', sessionMenu);
+  byId('sessionList').addEventListener('keydown', event => {
+    if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) sessionMenu(event);
+  });
+  window.addEventListener('storage', event => {
+    if (!event.key || event.key === 'aiSessionManager.readerAppearance') shell.refreshPreferences();
+    if (!event.key || event.key === 'aiSessionManager.favorites' || event.key.startsWith('aiSessionManager.codexSourceFavorites.')) {
+      app.refreshSharedState(); shell.sync();
+    }
+  });
+  void window.sessionApi.getWindowInitial().then(initial => app.initializeWindow(initial));
 });

@@ -331,9 +331,9 @@ function createSessionApp(options) {
     sourceBusy = true;
     syncSourceControls();
     try {
-      setStatus(action === 'choose' ? '正在打开 Codex 文件…' : action === 'reload' ? '正在重新读取会话…' : '正在返回会话库…');
+      setStatus(action === 'choose' || action === 'restore' ? '正在打开 Codex 文件…' : action === 'reload' ? '正在重新读取会话…' : '正在返回会话库…');
       const result = await (action === 'choose' ? sessionApi.chooseCodexFile()
-        : action === 'reload' ? sessionApi.reloadCodexFile() : sessionApi.loadSessions());
+        : action === 'reload' || action === 'restore' ? sessionApi.reloadCodexFile() : sessionApi.loadSessions());
       if (action === 'back' && result && (result.ok || result.reason === 'no-library')) {
         return applyLoadResult(result);
       }
@@ -494,6 +494,25 @@ function createSessionApp(options) {
 
   return {
     initialize,
+    async initializeWindow(initial) {
+      if (initial?.direct) return openDirectSource('restore');
+      const loaded = await initialize();
+      if (!loaded || !initial?.target) return loaded;
+      const target = initial.target;
+      if (target.kind === 'folder') {
+        const entry = folderView.getState().entries.find(item => item.sessionId === target.id);
+        if (entry) return openCodexCatalogEntry(entry.entryId);
+      } else if (target.kind === 'library' && sessions.some(item => item.id === target.id)) {
+        selectSession(target.id); return true;
+      }
+      setStatus('此会话已移除或不再可用，请从列表选择其他会话。', true);
+      return false;
+    },
+    refreshSharedState() {
+      favorites.reload();
+      if (sourceMode === 'folder') folderView.refreshFavorites();
+      else if (sourceMode === 'library') renderTree();
+    },
     chooseCodexFile, reloadCodexFile, backToLibrary,
     chooseCodexFolder, rescanCodexFolder, cancelCodexFolderScan,
     openCodexCatalogEntry, reloadCodexFolderEntry,

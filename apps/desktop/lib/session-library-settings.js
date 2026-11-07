@@ -44,9 +44,15 @@ function createLibrarySettings(options) {
     }
   }
 
+  let writes = Promise.resolve();
+  function enqueue(key, value, kind) {
+    const next = writes.then(() => save(key, value, kind));
+    writes = next.catch(() => {});
+    return next;
+  }
   return { getLibraryPath, getSource,
-    setLibraryPath: value => save('libraryPath', value, 'library'),
-    setCodexPath: value => save('codexPath', value, 'codex') };
+    setLibraryPath: value => enqueue('libraryPath', value, 'library'),
+    setCodexPath: value => enqueue('codexPath', value, 'codex') };
 }
 
 module.exports = { createLibrarySettings };

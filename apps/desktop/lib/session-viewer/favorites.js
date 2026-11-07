@@ -54,14 +54,24 @@ function createFavoritesController(opts) {
   const storage = opts.storage || null;
   const key = opts.key || DEFAULT_KEY;
   let set = loadFavoritesFromStorage(storage, key);
+  let stored = JSON.stringify([...set]);
+  function reload() {
+    if (!storage) return;
+    const next = loadFavoritesFromStorage(storage, key);
+    const value = JSON.stringify([...next]);
+    // Preserve in-memory changes if a quota failure left storage unchanged.
+    if (value !== stored) { stored = value; set = next; }
+  }
 
   return {
+    reload,
     isFavorite(relativePath) {
       if (typeof relativePath !== 'string' || relativePath.length === 0) return false;
       return set.has(relativePath);
     },
     toggle(relativePath) {
       if (typeof relativePath !== 'string' || relativePath.length === 0) return false;
+      reload();
       set = toggleFavorite(set, relativePath);
       saveFavoritesToStorage(storage, set, key);
       return set.has(relativePath);

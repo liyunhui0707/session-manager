@@ -1,6 +1,6 @@
 {
   "name": "ai-session-manager",
-  "version": "0.10.3",
+  "version": "0.11.0",
   "productName": "AI Session Manager",
   "description": "A local, read-only Codex conversation reader for macOS",
   "main": "main.js",
@@ -42,6 +42,7 @@
       "lib/codex-source-traversal.js",
       "lib/codex-folder-ipc.js",
       "lib/session-source-state.js",
+      "lib/session-window*.js",
       "lib/session-app.js",
       "lib/session-import-ipc.js",
       "lib/session-library*.js",

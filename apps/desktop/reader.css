@@ -224,3 +224,5 @@ legend { font-size: 12px; margin-bottom: 12px; font-weight: 600; }
 
 :root[data-font="xxxlarge"] { --reader-size: 24px; }
 :root[data-font="xxxxlarge"] { --reader-size: 26px; }
+
+.list-actions { display: flex; align-items: center; gap: 2px; }

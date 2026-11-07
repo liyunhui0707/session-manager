@@ -21,7 +21,7 @@
 可选校验：在下载目录运行以下命令，将结果与同版本 `SHA256SUMS-arm64.txt` 比较：
 
 ```sh
-shasum -a 256 AI-Session-Manager-0.10.3-mac-arm64.dmg
+shasum -a 256 AI-Session-Manager-0.11.0-mac-arm64.dmg
 ```
 
 校验和用于检测下载损坏或文件不一致，不替代 Apple 身份签名。

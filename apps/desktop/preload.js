@@ -3,6 +3,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('sessionApi', {
+  getWindowInitial: () => ipcRenderer.invoke('sessionWindow:initial'),
+  newWindow: () => ipcRenderer.invoke('sessionWindow:new'),
+  showSessionMenu: request => ipcRenderer.invoke('sessionWindow:menu', request),
   readCodexImage: request => ipcRenderer.invoke('codexImage:read', request),
   syncCodexConversation: () => ipcRenderer.invoke('codexConversation:sync'),
   moreCodexSearch: token => ipcRenderer.invoke('codexConversation:search-more', token),

@@ -21,6 +21,9 @@ module.exports = async ({ base, win, check, e, dialog }) => {
   await e("document.getElementById('folderFilterInput').value='没有此标题';document.getElementById('folderFilterInput').dispatchEvent(new Event('input'))");
   check('empty filter explains recovery without clearing reader', await e("document.getElementById('sessionList').textContent.includes('没有找到匹配的会话') && document.getElementById('readMount').textContent.includes('阅读体验回复 69')"));
   await e("document.getElementById('folderFilterInput').value='';document.getElementById('folderFilterInput').dispatchEvent(new Event('input'))");
+  // This scenario tests retry, not removal detection: suppress incidental timer/focus
+  // polls while the fixture is temporarily renamed. Foreground reload drains any active poll.
+  await e('window.__recoveryTick=codexLive.tick;codexLive.tick=async()=>{};sessionManagerApp.reloadCodexFolderEntry()');
   const body = await e("document.getElementById('readMount').textContent");
   fs.renameSync(file, file + '.held');
   await e('sessionManagerApp.reloadCodexFolderEntry()');
@@ -36,6 +39,7 @@ module.exports = async ({ base, win, check, e, dialog }) => {
   await e("document.getElementById('statusRetry').click()");
   for (let i = 0; i < 200 && await e('sessionManagerApp.isBusy()'); i++) await new Promise(r => setTimeout(r, 20));
   check('retry reopens the same conversation and clears error', await e(`!sessionManagerApp.isBusy() && document.getElementById('statusRetry').hidden && document.getElementById('status').dataset.kind==='status' && document.getElementById('readMount').textContent===${JSON.stringify(body)}`));
+  await e('codexLive.tick=window.__recoveryTick;delete window.__recoveryTick');
   let release;
   dialog.showOpenDialog = () => new Promise(resolve => { release = resolve; });
   await e('void sessionManagerApp.chooseCodexFile()');

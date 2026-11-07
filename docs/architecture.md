@@ -6,6 +6,14 @@ The Electron main process owns source selection and filesystem access. The rende
 
 `session-library-settings` stores local source preferences. First startup tries the default Codex root; later launches restore the previous source. Favorites and appearance are local settings. Direct-file reading does not authorize neighboring files.
 
+## Window isolation
+
+Each BrowserWindow owns its source state, foreground/background lock, catalog scanner, page reader and search reader. A single IPC router dispatches by registered WebContents; each context additionally validates the exact main frame and index URL. Closing a window detaches its sender and cancels its scans and readers. Native dialogs belong to their requesting window.
+
+New windows inherit a main-process source snapshot. Conversation context menus accept only IDs already present in that window's catalog/library; no arbitrary path capability is added. Stable session IDs are resolved again in the child's freshly scanned catalog. Removed targets produce a visible explanation.
+
+Source preferences are snapshotted per window and shared disk writes are serialized. Favorites and appearance use local storage events to synchronize windows. The importer retains its process-wide single-flight lock to prevent simultaneous exports. Multi-window layout is not persisted.
+
 ## Catalog and conversation reading
 
 The native C helper scans canonical directory entries and a bounded name index. A separate worker examines bounded source metadata, filters known background/non-interactive records and probes small initialization-only sessions. Uncertain classifications remain visible. Archived sessions are excluded from normal browsing and search.

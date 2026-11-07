@@ -87,7 +87,7 @@ test('standalone shell contains session features and no editor surfaces', () => 
 });
 
 test('main process registers only session-library/import IPC with hardened window settings', () => {
-  const source = read('main.js');
+  const source = read('main.js') + read('lib/session-window-context.js');
   assert.match(source, /registerLibraryIpc/);
   assert.match(source, /registerCodexFolderIpc/);
   assert.match(source, /SessionImportIpc\.register/);
