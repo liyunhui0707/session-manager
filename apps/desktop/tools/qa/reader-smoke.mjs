@@ -147,7 +147,7 @@ child.on('close', (code, signal) => {
   let remaining = false;
   try { process.kill(-child.pid, 0); remaining = true; } catch {}
   const passed = code === 0 && signal === null && !failure && !watchdog && !remaining && unchanged
-    && result?.packaged === true && result.errors?.length === 0 && result.checks?.length === ((longMode ? 178 : 164) + (resources ? 7 : 0) + (soak ? 4 : 0));
+    && result?.packaged === true && result.errors?.length === 0 && result.checks?.length === ((longMode ? 195 : 181) + (resources ? 7 : 0) + (soak ? 4 : 0));
   const report = { passed, code, signal, failure, watchdog, remaining, unchanged,
     durationMs: Date.now() - started, node: process.version, platform: process.platform, arch: process.arch,
     asarSha256: hash(asar), bootstrapSha256: hash(bootstrap), result };
