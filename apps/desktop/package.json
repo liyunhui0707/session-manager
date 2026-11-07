@@ -1,6 +1,6 @@
 {
   "name": "ai-session-manager",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "productName": "AI Session Manager",
   "description": "A local, read-only Codex conversation reader for macOS",
   "main": "main.js",

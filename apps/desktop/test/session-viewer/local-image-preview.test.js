@@ -35,7 +35,8 @@ function previewHarness() {
   let sequence = 0;
   doc.createElement = tag => {
     const el = create(tag), handlers = {};
-    Object.assign(el, { isConnected: true,
+    Object.assign(el, { isConnected: true, style: {},
+      remove() { if (el.parent) el.parent.removeChild(el); },
       append(...children) { children.forEach(child => el.appendChild(child)); },
       replaceChildren() { el.children.length = 0; },
       addEventListener(name, fn) { handlers[name] = fn; },
@@ -81,4 +82,65 @@ test('5K screenshots fit the bounded preview policy; pixel excess has a distinct
   const { inspectLocalImage } = load();
   assert.deepEqual(inspectLocalImage(png(5120,2820)), { mime: 'image/png', width: 5120, height: 2820 });
   assert.throws(() => inspectLocalImage(png(7000,4000)), { reason: 'pixel-limit' });
+});
+
+const result = () => ({ ok: true, bytes: png(800,540), mime: 'image/png', width: 800, height: 540 });
+const previewOf = card => card.children.find(n => n.className === 'attachment-preview');
+test('explicit close survives viewport reentry until the user loads the image again', async () => {
+  const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness(), card = h.card();
+  let reads = 0;
+  attachLocalImagePicker(card, h.doc, 'Image', async () => { reads++; return result(); });
+  h.observers[0].visible(); await h.tick();
+  previewOf(card).children.find(n => n.className === 'attachment-close').click();
+  for (let i = 0; i < 3; i++) { h.observers[0].visible(false); h.observers[0].visible(); await h.tick(); }
+  assert.equal(reads, 1); assert.equal(h.urls.size, 0); assert.equal(previewOf(card).children.length, 0);
+  await card.children.find(n => n.textContent === '加载图片').click();
+  assert.equal(reads, 2); assert.equal(h.urls.size, 1);
+  closeLocalImagePreview(h.doc);
+});
+test('offscreen release retains responsive image space and controls while revoking pixels', async () => {
+  const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness(), card = h.card();
+  attachLocalImagePicker(card, h.doc, 'Image', async () => result());
+  h.observers[0].visible(); await h.tick();
+  const preview = previewOf(card), slot = preview.children[0], status = card.children.find(n => n.className === 'attachment-note');
+  const note = status.textContent;
+  assert.equal(slot.className, 'attachment-image-slot');
+  assert.equal(slot.style.aspectRatio, '800 / 540');
+  h.observers[0].visible(false);
+  assert.equal(h.urls.size, 0); assert.equal(slot.children.length, 0);
+  assert.equal(preview.children[0], slot); assert.equal(preview.children.length, 3);
+  assert.equal(status.textContent, note);
+  h.observers[0].visible(); await h.tick();
+  assert.equal(h.urls.size, 1); assert.equal(preview.children[0].style.aspectRatio, '800 / 540');
+  closeLocalImagePreview(h.doc);
+});
+test('leaving while a thumbnail loads cancels its late render without consuming a lease', async () => {
+  const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness(), card = h.card();
+  let finish;
+  attachLocalImagePicker(card, h.doc, 'Image', () => new Promise(resolve => { finish = resolve; }));
+  h.observers[0].visible(); await h.tick(); h.observers[0].visible(false);
+  finish(result()); await h.tick();
+  assert.equal(h.urls.size, 0); assert.equal(previewOf(card).children.length, 0);
+  closeLocalImagePreview(h.doc);
+});
+test('lease eviction keeps layout and still lets the user close an evicted preview', async () => {
+  const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness();
+  const cards = Array.from({length: 5}, () => h.card());
+  for (const card of cards) attachLocalImagePicker(card, h.doc, 'Image', async () => result());
+  for (const observer of h.observers) { observer.visible(); await h.tick(); }
+  assert.equal(h.urls.size, 4); assert.equal(previewOf(cards[0]).children.length, 3);
+  previewOf(cards[0]).children.find(n => n.className === 'attachment-close').click();
+  h.observers[0].visible(false); h.observers[0].visible(); await h.tick();
+  assert.equal(previewOf(cards[0]).children.length, 0); assert.equal(h.urls.size, 4);
+  closeLocalImagePreview(h.doc);
+});
+
+test('thumbnail space uses its actual pixels while status retains original dimensions', async () => {
+  const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness(), card = h.card();
+  attachLocalImagePicker(card, h.doc, 'Image', async () => ({ ok: true, bytes: png(800,441),
+    mime: 'image/png', width: 5120, height: 2820 }));
+  h.observers[0].visible(); await h.tick();
+  assert.equal(previewOf(card).children[0].style.aspectRatio, '800 / 441');
+  assert.match(card.children.find(n => n.className === 'attachment-note').textContent, /5120 × 2820/);
+  closeLocalImagePreview(h.doc);
 });
