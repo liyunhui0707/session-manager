@@ -40,7 +40,7 @@ function previewHarness() {
       append(...children) { children.forEach(child => el.appendChild(child)); },
       replaceChildren() { el.children.length = 0; },
       addEventListener(name, fn) { handlers[name] = fn; },
-      click() { return handlers.click?.(); }, focus() {},
+      click() { return handlers.click?.(); }, emit(name) { return handlers[name]?.(); }, focus() {},
     });
     return el;
   };
@@ -105,13 +105,12 @@ test('offscreen release retains responsive image space and controls while revoki
   const preview = previewOf(card), slot = preview.children[0], status = card.children.find(n => n.className === 'attachment-note');
   const note = status.textContent;
   assert.equal(slot.className, 'attachment-image-slot');
-  assert.equal(slot.style.aspectRatio, '800 / 540');
   h.observers[0].visible(false);
   assert.equal(h.urls.size, 0); assert.equal(slot.children.length, 0);
   assert.equal(preview.children[0], slot); assert.equal(preview.children.length, 3);
   assert.equal(status.textContent, note);
   h.observers[0].visible(); await h.tick();
-  assert.equal(h.urls.size, 1); assert.equal(preview.children[0].style.aspectRatio, '800 / 540');
+  assert.equal(h.urls.size, 1); assert.equal(preview.children[0], slot);
   closeLocalImagePreview(h.doc);
 });
 test('leaving while a thumbnail loads cancels its late render without consuming a lease', async () => {
@@ -120,7 +119,8 @@ test('leaving while a thumbnail loads cancels its late render without consuming 
   attachLocalImagePicker(card, h.doc, 'Image', () => new Promise(resolve => { finish = resolve; }));
   h.observers[0].visible(); await h.tick(); h.observers[0].visible(false);
   finish(result()); await h.tick();
-  assert.equal(h.urls.size, 0); assert.equal(previewOf(card).children.length, 0);
+  assert.equal(h.urls.size, 0); assert.equal(previewOf(card).children.length, 3);
+  assert.equal(previewOf(card).children[0].children.length, 0);
   closeLocalImagePreview(h.doc);
 });
 test('lease eviction keeps layout and still lets the user close an evicted preview', async () => {
@@ -135,12 +135,36 @@ test('lease eviction keeps layout and still lets the user close an evicted previ
   closeLocalImagePreview(h.doc);
 });
 
-test('thumbnail space uses its actual pixels while status retains original dimensions', async () => {
+test('thumbnail loading preserves the initial frame while status retains original dimensions', async () => {
   const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness(), card = h.card();
   attachLocalImagePicker(card, h.doc, 'Image', async () => ({ ok: true, bytes: png(800,441),
     mime: 'image/png', width: 5120, height: 2820 }));
+  const slot = previewOf(card).children[0];
+  assert.ok(slot, 'reserve frame before any file read');
   h.observers[0].visible(); await h.tick();
-  assert.equal(previewOf(card).children[0].style.aspectRatio, '800 / 441');
+  assert.equal(previewOf(card).children[0], slot);
   assert.match(card.children.find(n => n.className === 'attachment-note').textContent, /5120 × 2820/);
+  closeLocalImagePreview(h.doc);
+});
+
+test('pending, failed and decoded previews retain the frame and its controls', async () => {
+  const { attachLocalImagePicker, closeLocalImagePreview } = load(), h = previewHarness(), card = h.card();
+  let finish;
+  attachLocalImagePicker(card, h.doc, 'Image', () => new Promise(resolve => { finish = resolve; }));
+  const preview = previewOf(card), children = [...preview.children];
+  assert.equal(children.length, 3, 'reserve image and controls before IntersectionObserver fires');
+  h.observers[0].visible(); await h.tick();
+  assert.deepEqual(preview.children, children);
+  finish({ ok: false, reason: 'missing-image' }); await h.tick();
+  assert.deepEqual(preview.children, children);
+  assert.match(card.children.find(n => n.className === 'attachment-note').textContent, /原图已不存在/);
+  const pending = card.children.find(n => n.textContent === '加载图片').click(); await h.tick();
+  finish(result()); await pending;
+  const img = children[0].children[0];
+  img.naturalWidth = 540; img.naturalHeight = 800; img.emit('load');
+  assert.deepEqual(preview.children, children, 'decode/orientation must not replace the frame');
+  img.emit('error');
+  assert.deepEqual(preview.children, children, 'decode error must not collapse image space');
+  assert.equal(h.urls.size, 0);
   closeLocalImagePreview(h.doc);
 });

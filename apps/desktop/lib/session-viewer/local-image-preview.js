@@ -74,6 +74,12 @@ function attachLocalImagePicker(container, doc, label, loadImage) {
   const close = doc.createElement('button'); close.type = 'button'; close.textContent = '关闭预览'; close.className = 'attachment-close';
   let generation = 0, objectUrl = null, closeZoom = null, observer, disposed = false;
   let dismissed = false, current = null, image = null;
+  const slot = doc.createElement('div'); slot.className = 'attachment-image-slot';
+  function reserveLayout() {
+    if (!preview.children.length) preview.append(slot, enlarge, close);
+  }
+  enlarge.disabled = true;
+  reserveLayout();
   // Release decoded pixels and closures holding file bytes without collapsing
   // the image's responsive slot or changing the controls/status line geometry.
   function release() {
@@ -95,38 +101,26 @@ function attachLocalImagePicker(container, doc, label, loadImage) {
     slots.add(release);
   }
   function render(bytes, info, name, automatic) {
-    const dimensions = inspectLocalImage(bytes);
+    inspectLocalImage(bytes);
     reserve();
     const imageToken = generation;
     objectUrl = win.URL.createObjectURL(new win.Blob([bytes], { type: info.mime }));
     const img = doc.createElement('img'); img.alt = `${label}：${name}`;
     img.addEventListener('error', () => {
       if (generation !== imageToken) return;
-      clear(); status.textContent = '图片无法解码，请重新选择有效的 PNG 或 JPEG 文件。';
+      release(); status.textContent = '图片无法解码，请重新选择有效的 PNG 或 JPEG 文件。';
     });
     img.src = objectUrl;
-    const slot = doc.createElement('div'); slot.className = 'attachment-image-slot';
-    function sizeSlot(width, height) {
-      slot.style.width = `${Math.min(width, 540 * width / height)}px`;
-      slot.style.aspectRatio = `${width} / ${height}`;
-    }
-    sizeSlot(dimensions.width, dimensions.height);
-    // The thumbnail can have rounded dimensions; JPEG decoding can also apply
-    // orientation. Keep the slot consistent with the pixels actually displayed.
-    img.addEventListener('load', () => {
-      if (generation === imageToken) sizeSlot(img.naturalWidth, img.naturalHeight);
-    });
     slot.append(img); image = img;
     current = { bytes: automatic ? null : bytes, info, automatic };
     enlarge.disabled = false;
     img.addEventListener('click', () => enlarge.click());
-    preview.replaceChildren(); preview.append(slot, enlarge, close);
     status.textContent = `${automatic ? '已关联原图' : '本次预览：' + name} · ${info.width} × ${info.height}${automatic ? '' : ' · 未保存到会话'}`;
   }
   async function automatic() {
     if (!loadImage || disposed) return;
-    release(); const token = generation; load.disabled = true;
-    if (!preview.children.length) status.textContent = '正在加载图片…';
+    release(); reserveLayout(); const token = generation; load.disabled = true;
+    if (!status.textContent) status.textContent = '正在加载图片…';
     try {
       const result = await queue(doc, () => disposed || token !== generation ? null : loadImage('preview'));
       if (!result || disposed || token !== generation || !container.isConnected) return;
@@ -154,7 +148,7 @@ function attachLocalImagePicker(container, doc, label, loadImage) {
   input.addEventListener('change', async () => {
     const file = input.files?.[0];
     if (!file) return;
-    dismissed = false; clear();
+    dismissed = false; clear(); reserveLayout();
     const token = generation;
     try {
       if (file.size > MAX_IMAGE_BYTES) throw new Error('图片超过 8 MiB，请选择较小的 PNG 或 JPEG 图片。');
@@ -163,7 +157,7 @@ function attachLocalImagePicker(container, doc, label, loadImage) {
       const info = inspectLocalImage(bytes);
       render(bytes, info, file.name, false);
     } catch (error) {
-      if (token === generation) { clear(); status.textContent = error.message; }
+      if (token === generation) { release(); status.textContent = error.message; }
     }
   });
   container.append(input, load, choose, status, preview);
