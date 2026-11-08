@@ -46,5 +46,7 @@ module.exports = async function ({ base, win, check, e, dialog }) {
   const reloaded = await e('sessionManagerApp.reloadCodexFile()');
   check('reloading the conversation disposes the original-image modal', reloaded && await e("!document.querySelector('.image-lightbox')"));
   check('automatic image association preserves transcript and image bytes', hash(file) === sourceHash && hash(image) === imageHash);
+  await require('./reader-image-bottom-up-check.cjs')({ base, win, check, e, dialog, image });
+  await require('./reader-image-entry-check.cjs')({ base, win, check, e, dialog, image });
   await require('./reader-image-scroll-check.cjs')({ base, win, check, e, dialog, image });
 };

@@ -191,8 +191,12 @@ legend { font-size: 12px; margin-bottom: 12px; font-weight: 600; }
 .attachment-card figcaption { font-size: 13px; font-weight: 600; }
 .read-section .attachment-note { margin: 8px 0 12px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .attachment-controls button { font-size: 12px; }
-.attachment-image-slot { max-width: 100%; margin: 14px 0; border-radius: 8px; overflow: hidden; }
-.attachment-preview img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+/* Reserve geometry before any asynchronous read, including status and actions.
+   Absolutely positioned pixels cannot resize the frame on decode/orientation. */
+.attachment-controls > .attachment-note { height: 36px; line-height: 18px; overflow: auto; }
+.attachment-image-slot { position: relative; width: min(800px, 100%); aspect-ratio: 3 / 2; margin: 14px 0; border-radius: 8px; overflow: hidden; background: var(--accent-soft); }
+.attachment-image-slot:empty::after { content: '图片预览'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: var(--muted); }
+.attachment-preview img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
 .attachment-preview img { cursor: zoom-in; }
 .attachment-controls button { margin: 0 8px 4px 0; }
 .image-lightbox { width: min(1120px, 94vw); max-width: 94vw; height: min(860px, 90vh); max-height: 90vh; padding: 0; color: var(--text); background: var(--canvas); border: 1px solid var(--border); border-radius: 16px; }

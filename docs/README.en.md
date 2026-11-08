@@ -12,7 +12,7 @@ No app account, AI service, analytics, or chat upload is required. Browsing and 
 
 The downloadable build supports Apple Silicon Macs running macOS 12 or later. Download the DMG from GitHub Releases and drag AI Session Manager into Applications. Intel users can build from source; an accepted Intel binary is not currently offered.
 
-Version **0.11.1** fixes scrolling jumps around image previews and keeps dismissed previews closed. Independent reader windows let you place conversations on different macOS desktops.
+Version **0.11.2** keeps text stable when images first load while reading upwards from the latest messages, and keeps dismissed previews closed. Independent reader windows let you place conversations on different macOS desktops.
 
 **The release is not Developer ID signed or notarized.** macOS may block the first launch. Only if you trust this repository, use the system's Privacy & Security → Open Anyway option. Do not disable Gatekeeper globally. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
