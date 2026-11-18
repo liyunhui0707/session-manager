@@ -44,8 +44,13 @@ async function readConversation(data) {
   const matches = [], query = data.query && fold(data.query);
   const collect = message => {
     const body = message.text;
+    const presentation = body.text === undefined ? null : describeMessage(body.text, message.role);
+    // Hide recognized tool-question replies before paging, counting and search.
+    // Keep turn processing intact: confirmations must not discard the final answer.
+    // Unknown or non-inline bodies remain readable rather than guessed from a prefix.
+    if (presentation?.kind === 'questions') return;
     let hit = body.hit;
-    if (query && body.text !== undefined && describeMessage(body.text, message.role)) {
+    if (query && presentation) {
       const visible = extractConversationTextRuns({ messages: [{ role: message.role, text: body.text }] })
         .find(text => fold(text).includes(query));
       const at = visible ? originalOffset(visible, fold(visible).indexOf(query)) : -1;

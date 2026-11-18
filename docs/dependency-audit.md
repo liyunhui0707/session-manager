@@ -36,3 +36,28 @@ disable audits or run `npm audit fix --force` just to remove the warning count.
 
 References: [Electron 43.8.7 release](https://github.com/electron/electron/releases/tag/v43.8.7),
 [Electron preload-cache advisory](https://github.com/electron/electron/security/advisories/GHSA-qmv3-fv6v-rmhq).
+
+## Dated build-only exception — 2026-11-18
+
+The 0.12.0 release review reports a new high-severity
+[picomatch repeated-extglob advisory](https://github.com/advisories/GHSA-fc5q-39xc-vjpf),
+with no patched version available at review time. The maintainer approved an
+exception until **2026-12-18 00:00 UTC**, limited to picomatch **4.0.7** and reports
+inherited from that exact advisory. This does not mark the vulnerability fixed.
+
+The path is electron-builder → @electron/rebuild → node-gyp → tinyglobby/fdir →
+picomatch. These modules are build-only and absent from the packaged application.
+The inspected node-gyp build calls use fixed `build/*.sln` and `build/*.mk`
+patterns; chat contents never supply patterns. No runtime dependency exception
+is allowed. Production auditing remains unchanged.
+
+`audit:release` still runs the complete npm audit and prints its counts, including
+accepted findings. A bounded checker follows inherited advisories and permits
+only this exact high advisory on development-only lockfile entries at the
+reviewed version. Other high/critical findings, malformed audit responses,
+version changes and expiration fail the release gate. Review the exception again
+when upstream publishes a fix; do not extend it automatically.
+
+At review: production audit 0; full audit 5 moderate and 6 high entries, with the
+6 high entries attributable to this one build-only advisory. Historical counts
+above describe earlier releases.
