@@ -58,7 +58,7 @@ function createReaderShell({ document: doc, app, storage }) {
     text('listHeading', favoritesOnly ? '收藏会话' : '最近会话');
   }
   function sync() {
-    doc.title = `${byId('readTitle').textContent || '会话阅读器'} — Session Manager`;
+    doc.title = `${byId('readTitle').textContent || '会话阅读器'} — Threadleaf`;
     const state = app.getState(), folder = state.sourceMode === 'folder', library = state.sourceMode === 'library';
     const nextKey = `${state.sourceMode}:${state.folder?.sourceId || state.libraryPath || ''}`;
     if (nextKey !== sourceKey) {

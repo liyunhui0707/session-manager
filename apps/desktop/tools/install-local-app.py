@@ -15,7 +15,7 @@ import pwd
 import subprocess
 import uuid
 
-APP_NAME = 'AI Session Manager.app'
+APP_NAME = 'Threadleaf.app'
 BUNDLE_ID = 'com.aisessionmanager.desktop'
 
 
@@ -39,25 +39,32 @@ def manifest(app):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--expected-version', required=True)
+    parser.add_argument('--system-applications', action='store_true', help='Install in /Applications')
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     source = root / 'dist/mac-arm64' / APP_NAME
     package = json.loads((root / 'package.json').read_text())
     if package['version'] != args.expected_version or info(source).get('CFBundleIdentifier') != BUNDLE_ID or info(source).get('CFBundleShortVersionString') != args.expected_version:
         raise RuntimeError('Packaged identity/version does not match the requested install')
-    applications = Path.home() / 'Applications'
+    applications = Path('/Applications') if args.system_applications else Path.home() / 'Applications'
     applications.mkdir(exist_ok=True)
     if applications.is_symlink():
         raise RuntimeError('Refusing a redirected Applications directory')
     target = applications / APP_NAME
+    legacy = applications / 'AI Session Manager.app'
+    if legacy.is_symlink() or (legacy.exists() and info(legacy).get('CFBundleIdentifier') != BUNDLE_ID):
+        raise RuntimeError('Unexpected legacy installation')
+    if legacy.exists() and target.exists():
+        raise RuntimeError('Both application names already exist; inspect before replacing')
+    prior = legacy if legacy.exists() else target
     if target.is_symlink() or (target.exists() and info(target).get('CFBundleIdentifier') != BUNDLE_ID):
         raise RuntimeError('Existing target is not this application')
     # Do not replace a running installed copy. The temporary QA profiles exit first.
     commands = subprocess.check_output(['/bin/ps', '-axo', 'command='], text=True)
-    if any(line.startswith(str(target / 'Contents/MacOS/AI Session Manager')) for line in commands.splitlines()):
-        raise RuntimeError('Quit the installed Session Manager before replacing it')
+    if any(line.startswith(str(prior / 'Contents/MacOS' / prior.stem)) for line in commands.splitlines()):
+        raise RuntimeError('Quit the installed Threadleaf before replacing it')
     stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S') + '-' + uuid.uuid4().hex[:6]
-    backup = Path.home() / 'Library/Application Support/AI Session Manager/DeliveryBackups' / stamp
+    backup = Path.home() / 'Library/Application Support/AI Session Manager/DeliveryBackups' / (stamp + '.noindex')
     backup.mkdir(parents=True, mode=0o700)
     old_dock = subprocess.check_output(['/usr/bin/defaults', 'export', 'com.apple.dock', '-'])
     (backup / 'dock.plist').write_bytes(old_dock)
@@ -67,21 +74,21 @@ def main():
     expected = manifest(source)
     if manifest(staged) != expected:
         raise RuntimeError('Staged app verification failed; existing app retained')
-    previous = backup / APP_NAME
-    if target.exists(): target.rename(previous)
+    previous = backup / prior.name
+    if prior.exists(): prior.rename(previous)
     try:
         staged.rename(target)
     except Exception:
-        if previous.exists(): previous.rename(target)
+        if previous.exists(): previous.rename(prior)
         raise
     dock = plistlib.loads(old_dock)
     entries = dock.get('persistent-apps', [])
-    urls = {target.as_uri(), target.as_uri() + '/', source.as_uri(), source.as_uri() + '/'}
+    urls = {prior.as_uri(), prior.as_uri() + '/', target.as_uri(), target.as_uri() + '/', source.as_uri(), source.as_uri() + '/'}
     def ours(entry):
         data = entry.get('tile-data', {})
         return data.get('bundle-identifier') == BUNDLE_ID or data.get('file-data', {}).get('_CFURLString') in urls
     new_entry = {'tile-type': 'file-tile', 'tile-data': {
-        'bundle-identifier': BUNDLE_ID, 'file-label': 'AI Session Manager',
+        'bundle-identifier': BUNDLE_ID, 'file-label': 'Threadleaf',
         'file-data': {'_CFURLString': target.as_uri() + '/', '_CFURLStringType': 15},
         'file-type': 41,
     }}

@@ -10,6 +10,8 @@ function createTurnReader(emit, policy = {}, saved = {}) {
     return text;
   });
   const isText = policy.isText || (text => typeof text === 'string');
+  const hasContent = policy.hasContent || (value => isText(value) && value.length > 0);
+  const merge = policy.merge || ((_a, b) => b);
   const equal = policy.equal || ((a, b) => a === b);
   function flushPrompt() {
     if (prompt !== null) { emit({ role: 'user', text: prompt }); waiting = true; prompt = null; }
@@ -33,11 +35,13 @@ function createTurnReader(emit, policy = {}, saved = {}) {
       if (!p || typeof p !== 'object') return;
       if (record.type === 'event_msg') {
         if (['task_started', 'turn_started'].includes(p.type)) { complete(); completedAnswer = null; return; }
-        if (p.type === 'user_message' && isText(p.message) && p.message.length) {
+        if (p.type === 'user_message' && hasContent(p.message)) {
           // A response_item immediately preceding its event is a mirror.
-          if (equal(prompt, p.message)) prompt = null;
-          complete(); completedAnswer = null; emit({ role: 'user', text: check(p.message) });
-          mirror = p.message; waiting = true; return;
+          let next = check(p.message);
+          if (!mirror && equal(prompt, next)) { next = merge(prompt, next); prompt = null; }
+          complete(); completedAnswer = null;
+          // Delay publication until the adjacent response mirror can supply attachments.
+          prompt = next; mirror = next; waiting = true; return;
         }
         if (['task_complete', 'turn_complete'].includes(p.type)) complete(p.last_agent_message, true);
         if (p.type === 'turn_aborted') { flushPrompt(); answer = unknown = null; waiting = false; }
@@ -46,9 +50,9 @@ function createTurnReader(emit, policy = {}, saved = {}) {
       if (record.type !== 'response_item' || p.type !== 'message' || !Array.isArray(p.content)) return;
       const text = policy.join ? policy.join(p.content) : p.content.filter(b => ['input_text', 'output_text'].includes(b?.type) && typeof b.text === 'string')
         .map(b => b.text).join('\n\n');
-      if (!text?.length) return;
+      if (!hasContent(text)) return;
       if (p.role === 'user') {
-        if (equal(mirror, text)) { mirror = null; return; }
+        if (equal(mirror, text)) { if (prompt) prompt = merge(prompt, text); mirror = null; return; }
         if (isSetup(text)) return;
         complete(); completedAnswer = null; prompt = check(text); return;
       }

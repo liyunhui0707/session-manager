@@ -1,4 +1,4 @@
-// Run on either Mac: node reader-smoke.mjs '/path/to/AI Session Manager.app'
+// Run on either Mac: node reader-smoke.mjs '/path/to/Threadleaf.app'
 // Uses only invented data, a fresh profile, and a loopback inspector bootstrap.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,7 +14,7 @@ if (process.platform !== 'darwin' || Number(process.versions.node.split('.')[0])
 }
 const app = fs.realpathSync(process.argv[2]);
 const contents = path.join(app, 'Contents');
-const binary = path.join(contents, 'MacOS', 'AI Session Manager');
+const binary = path.join(contents, 'MacOS', 'Threadleaf');
 const asar = path.join(contents, 'Resources', 'app.asar');
 if (!app.endsWith('.app') || !fs.statSync(asar).isFile()) throw Error('Expected packaged app');
 const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'asm-reader-smoke-')));
@@ -147,7 +147,7 @@ child.on('close', (code, signal) => {
   let remaining = false;
   try { process.kill(-child.pid, 0); remaining = true; } catch {}
   const passed = code === 0 && signal === null && !failure && !watchdog && !remaining && unchanged
-    && result?.packaged === true && result.errors?.length === 0 && result.checks?.length === ((longMode ? 215 : 201) + (resources ? 7 : 0) + (soak ? 4 : 0));
+    && result?.packaged === true && result.errors?.length === 0 && result.checks?.length === ((longMode ? 234 : 220) + (resources ? 7 : 0) + (soak ? 4 : 0));
   const report = { passed, code, signal, failure, watchdog, remaining, unchanged,
     durationMs: Date.now() - started, node: process.version, platform: process.platform, arch: process.arch,
     asarSha256: hash(asar), bootstrapSha256: hash(bootstrap), result };

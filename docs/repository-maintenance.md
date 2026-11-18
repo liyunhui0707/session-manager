@@ -1,6 +1,6 @@
 # Repository discipline
 
-- The public `session-manager` repository is the product's source of truth. Start future feature branches from its accepted `main`; use reviewed pull requests and passing checks for integration.
+- The public `threadleaf` repository is the product's source of truth. Start future feature branches from its accepted `main`; use reviewed pull requests and passing checks for integration.
 - Keep one normal development checkout. Additional worktrees are for genuine isolation, not every small change. Do not maintain parallel, diverging product histories.
 - Save verified, coherent changes. Inspect staged files and diff before committing. Do not push archive refs or unrelated repository history.
 - Use the maintainer's GitHub noreply email for public commit authors and committers. Local Git identity does not control GitHub-generated merge commits: pass `gh pr merge --author-email <GitHub-noreply-email>` explicitly and verify the resulting metadata before tagging. If GitHub rejects that address, do not retry without it: create the reviewed merge locally with the repository's noreply identity, verify its metadata, and push normally without force. Do not change global Git identity as part of a project task.

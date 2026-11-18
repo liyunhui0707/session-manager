@@ -2,7 +2,7 @@
 const { StringDecoder } = require('node:string_decoder');
 const { createJsonStringDecoder } = require('./codex-page-json-string');
 const MAX_RETAINED = 2 * 1024 * 1024;
-const payloadKeys = new Set(['type', 'role', 'phase', 'channel', 'message', 'last_agent_message', 'content']);
+const { childPath: projectedPath, isImagePath } = require('./codex-page-projection-path');
 const special = /["\\\x00-\x1f]/g;
 const space = char => char === ' ' || char === '\n' || char === '\r' || char === '\t';
 const failure = code => Object.assign(new Error(code), { code });
@@ -14,17 +14,7 @@ function createConversationProjection(options = {}) {
   const decoder = new StringDecoder('utf8'), stack = [];
   let rootState = 'value', result, token = null, retainedBytes = 0;
   const invalid = () => { throw new SyntaxError('Invalid JSON record'); };
-  function childPath(frame) {
-    if (!frame) return [];
-    const path = frame.path;
-    if (!path) return null;
-    const key = frame.kind === 'array' ? '*' : frame.key;
-    if (path.length === 0 && ['type', 'payload'].includes(key)) return [key];
-    if (path.length === 1 && path[0] === 'payload' && payloadKeys.has(key)) return [...path, key];
-    if (path.join('.') === 'payload.content' && key === '*') return [...path, key];
-    if (path.join('.') === 'payload.content.*' && ['type', 'text'].includes(key)) return [...path, key];
-    return null;
-  }
+  const childPath = frame => projectedPath(frame, !!options.createImage);
   function expectsValue() {
     const frame = stack.at(-1);
     return frame ? ['value', 'valueOrEnd'].includes(frame.state) : rootState === 'value';
@@ -74,11 +64,12 @@ function createConversationProjection(options = {}) {
     const key = frame?.kind === 'object' && ['key', 'keyOrEnd'].includes(frame.state);
     if (!key && !expectsValue()) invalid();
     const path = key ? null : childPath(frame);
-    const isText = path && ['text', 'message', 'last_agent_message'].includes(path.at(-1));
+    const isImage = options.createImage && isImagePath(path);
+    const isText = isImage || path && ['text', 'message', 'last_agent_message'].includes(path.at(-1));
     token = { kind: 'string', key, keep: key || !!path, isText, parts: [], pending: '', length: 0,
       limit: 8192, escaped: false, unicode: 0 };
     if (isText) {
-      token.textSink = options.createText?.(stack);
+      token.textSink = isImage ? options.createImage(stack) : options.createText?.(stack);
       token.textDecoder = createJsonStringDecoder(text => {
         if (token.textSink) { token.textSink.write(text); return; }
         retainedBytes += Buffer.byteLength(text);

@@ -5,7 +5,7 @@ Use a separate Mac to check a release candidate with an explicitly authorized te
 1. Record the exact source revision, package SHA-256, macOS version, CPU architecture and test runtime.
 2. Transfer the candidate package and the **whole** `apps/desktop/tools/qa` directory; do not include Git history, personal settings, or chats.
 3. Verify the transferred hash against the independently retained local hash. Extract in a private test directory.
-4. On an available, unlocked desktop, use Node.js 24 to run `reader-smoke.mjs '/absolute/path/AI Session Manager.app'`. The harness creates invented conversations and an isolated profile.
+4. On an available, unlocked desktop, use Node.js 24 to run `reader-smoke.mjs '/absolute/path/Threadleaf.app'`. The harness creates invented conversations and an isolated profile.
 5. Retain result JSON, exit status and synthetic screenshots. Stop on a preparation failure rather than repeatedly trying new remote-control methods.
 
 A harness pass covers the tested app interactions. It does not prove Finder installation, download quarantine behavior, minimum-OS compatibility, Intel compatibility, or signed auto-update. Record those checks separately, and label untested items.

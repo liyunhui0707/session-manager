@@ -2,7 +2,7 @@
 
 ## Channels and identity
 
-The public product repository is `liyunhui0707/session-manager`. Maintain source
+The public product repository is `liyunhui0707/threadleaf`. Maintain source
 there after the initial publication. Never push the original private development
 repository or archive refs into it. Public commits use a maintainer's GitHub
 noreply address; no global Git identity change is required.
@@ -63,7 +63,7 @@ acceptance; do not remove quarantine or disable system protection to pass it.
 Generate checksums from exact-version files, never a broad directory glob:
 
 ```sh
-node tools/release/release-metadata.mjs apps/desktop/dist 0.11.1 arm64
+node tools/release/release-metadata.mjs apps/desktop/dist 0.13.0 arm64
 ```
 
 Create a **draft** GitHub Release for the verified tag. Upload only the reviewed

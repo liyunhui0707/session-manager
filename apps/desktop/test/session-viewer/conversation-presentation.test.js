@@ -56,6 +56,19 @@ test('image syntax in code or nonempty/unknown envelopes is preserved', () => {
   }
 });
 
+test('native attachment counts render cards without exposing source data or requiring envelope text', () => {
+  for (const text of ['', '[Image #1][Image #2] inspect', '<image name=[Image #1] path="/tmp/private.png"></image>\ninspect']) {
+    const root = renderStructuredConversation({ messages: [{ role: 'user', text, imageCount: 2 }] }, { document: makeFakeDocument() });
+    assert.equal(findAllByTag(root, 'figure').length, 2);
+    assert.equal(findAllByTag(root, 'img').length, 0);
+    assert.ok(!flattenText(root).includes('/tmp/private'));
+  }
+  for (const imageCount of [-1, 17, '2', NaN]) {
+    const root = renderStructuredConversation({ messages: [{ role: 'user', text: 'literal [Image #1]', imageCount }] }, { document: makeFakeDocument() });
+    assert.equal(findAllByTag(root, 'figure').length, 0);
+  }
+});
+
 test('question/attachment text indexes match on-screen search and omit protocol metadata', () => {
   for (const text of [wrap([{ question: '方向 needle', answer: 'needle 简洁', questionItemId: 'routingneedle' }]),
     '<image name=[Image #1] path="/tmp/pathneedle.png"></image>\n[Image #1] needle']) {

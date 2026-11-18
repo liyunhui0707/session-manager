@@ -1,4 +1,4 @@
-name: AI Session Manager CI
+name: Threadleaf CI
 
 on:
   pull_request:

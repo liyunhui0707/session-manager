@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Session Manager</title>
+  <title>Threadleaf</title>
   <link rel="stylesheet" href="./reader.css">
 </head>
 <body>
@@ -31,7 +31,7 @@
 
   <div class="app">
     <aside class="sidebar" aria-label="会话导航">
-      <div class="brand"><span class="brand-symbol" aria-hidden="true">≋</span><span>Session Manager<small>每一次对话，都值得回看</small></span></div>
+      <div class="brand"><span class="brand-symbol" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#345f50"/><path d="M16 45C10 25 28 17 50 14C50 36 42 51 22 46M14 52Q26 36 40 25" fill="none" stroke="#f4f6ed" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Threadleaf<small>每一次对话，都值得回看</small></span></div>
       <button id="searchLaunch" class="search-launch" type="button"><svg aria-hidden="true"><use href="#search"/></svg><span>搜索对话</span><kbd>⌘ K</kbd></button>
       <div id="librarySourceTabs" class="source-tabs" role="group" aria-label="会话来源" hidden><button type="button" data-agent="all" aria-pressed="true">全部</button><button type="button" data-agent="codex" aria-pressed="false">Codex</button><button type="button" data-agent="claude" aria-pressed="false">Claude</button></div>
       <div id="currentSourceChip" class="source-chip" hidden>Codex · 未归档对话</div>
@@ -54,7 +54,7 @@
       <div class="read-shell" tabindex="0" aria-label="会话正文">
         <div id="largeSessionNotice" class="large-session-notice" hidden>这段会话较长，准备好后再展开。<button id="loadLargeSessionButton" type="button">展开会话</button></div>
         <article id="readMount" class="read-view"></article>
-        <div class="reader-welcome"><div class="welcome-mark" aria-hidden="true">≋</div><p class="eyebrow">留一点空间，回看好对话</p><h2 id="welcomeTitle">好对话，值得再读一次。</h2><p id="welcomeHint">找回一个想法，重温一个答案。<br>按照自己的节奏，回看每一次对话。</p><button id="welcomeConnect" type="button" class="primary-action">选择本地来源</button><small>只读访问 · 聊天内容留在你的 Mac 上</small></div>
+        <div class="reader-welcome"><div class="welcome-mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#345f50"/><path d="M16 45C10 25 28 17 50 14C50 36 42 51 22 46M14 52Q26 36 40 25" fill="none" stroke="#f4f6ed" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><p class="eyebrow">留一点空间，回看好对话</p><h2 id="welcomeTitle">好对话，值得再读一次。</h2><p id="welcomeHint">找回一个想法，重温一个答案。<br>按照自己的节奏，回看每一次对话。</p><button id="welcomeConnect" type="button" class="primary-action">选择本地来源</button><small>只读访问 · 聊天内容留在你的 Mac 上</small></div>
       </div>
       <button id="codexNewMessages" class="jump-latest" type="button" hidden>有新消息 · 回到最新 ↓</button>
       <footer class="reader-footer"><span id="readerPosition">会话阅读器</span><span id="readerMode">本地阅读 · 只读</span></footer>

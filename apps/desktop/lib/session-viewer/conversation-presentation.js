@@ -51,7 +51,7 @@ function renderPresentation(presentation, doc, interactive = false, loadImage) {
       card.appendChild(node('figcaption', `图片 ${item.number}`));
       const controls = node('div', undefined, 'attachment-controls');
       controls.setAttribute('data-search-ignore', 'true');
-      controls.appendChild(node('p', loadImage ? '在阅读时关联本地原图，也可手动选择。' : '选择本地原图，在这里预览。', 'attachment-note'));
+      controls.appendChild(node('p', loadImage ? '在阅读时加载图片，也可手动选择本地原图。' : '选择本地原图，在这里预览。', 'attachment-note'));
       if (interactive) {
         const { attachLocalImagePicker } = typeof require !== 'undefined' ? require('./local-image-preview') : window.SessionViewer;
         attachLocalImagePicker(controls, doc, `图片 ${item.number}`, loadImage && (size => loadImage(imageIndex, size)));

@@ -1,8 +1,8 @@
-# AI Session Manager
+# Threadleaf
 
 A quiet, local reader for your Codex conversations on macOS.
 
-[Download](https://github.com/liyunhui0707/session-manager/releases/latest) · [中文](../README.md)
+[Download](https://github.com/liyunhui0707/threadleaf/releases/latest) · [中文](../README.md)
 
 Read prompts and final replies, open at the latest message, search across conversations, keep favorites, and choose a comfortable text size and theme. Known background tasks and archived conversations are hidden. Existing Codex and Claude Markdown export libraries are also supported; native Claude integration is not included.
 
@@ -10,9 +10,11 @@ No app account, AI service, analytics, or chat upload is required. Browsing and 
 
 ## Install
 
-The downloadable build supports Apple Silicon Macs running macOS 12 or later. Download the DMG from GitHub Releases and drag AI Session Manager into Applications. Intel users can build from source; an accepted Intel binary is not currently offered.
+The downloadable build supports Apple Silicon Macs running macOS 12 or later. Download the DMG from GitHub Releases and drag Threadleaf into Applications. Intel users can build from source; an accepted Intel binary is not currently offered.
 
-Version **0.12.0** hides recognized tool-question exchanges from Codex reading, pagination, message counts and search, while retaining prompts typed in the normal input box and final replies. Independent reader windows let you place conversations on different macOS desktops.
+Threadleaf 0.13.0 succeeds AI Session Manager and displays native inline image attachments. Quit the old app, install Threadleaf alongside it and verify your settings before removing the old app.
+
+The reader hides recognized tool-question exchanges from Codex reading, pagination, message counts and search, while retaining prompts typed in the normal input box and final replies. Independent reader windows let you place conversations on different macOS desktops.
 
 **The release is not Developer ID signed or notarized.** macOS may block the first launch. Only if you trust this repository, use the system's Privacy & Security → Open Anyway option. Do not disable Gatekeeper globally. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
@@ -29,8 +31,8 @@ Closing a window leaves the others open; quitting closes all windows. The next l
 Requires macOS, Node.js 24, and Apple Command Line Tools.
 
 ```sh
-git clone https://github.com/liyunhui0707/session-manager.git
-cd session-manager/apps/desktop
+git clone https://github.com/liyunhui0707/threadleaf.git
+cd threadleaf/apps/desktop
 npm ci
 npm run dev
 npm run test:ci
@@ -50,6 +52,6 @@ classifies it as a development dependency; see [remaining build-tool findings](d
 
 Unknown or incompletely recognized message formats remain readable to avoid hiding ordinary text. Source files are unchanged.
 
-First opens and uncached searches scan the conversation. Resource limits and corrupt records produce visible incomplete-read warnings. Local static PNG/JPEG references are supported up to 8 MiB and 24 megapixels; remote and inline encoded images are not loaded, and deleted temporary images cannot be recovered.
+First opens and uncached searches scan the conversation. Resource limits and corrupt records produce visible incomplete-read warnings. Local references and Codex inline static PNG/JPEG attachments are loaded on demand, up to 8 MiB and 24 megapixels. Remote images are not fetched; deleted local images without an embedded copy cannot be recovered.
 
 Please report problems using synthetic examples, without chats, local paths, or credentials. This is an independent project, not affiliated with OpenAI or Anthropic. [MIT licensed](../LICENSE).

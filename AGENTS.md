@@ -1,4 +1,4 @@
-# AI Session Manager contributor guide
+# Threadleaf contributor guide
 
 ## Product boundary
 

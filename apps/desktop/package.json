@@ -1,7 +1,7 @@
 {
-  "name": "ai-session-manager",
-  "version": "0.12.0",
-  "productName": "AI Session Manager",
+  "name": "threadleaf",
+  "version": "0.13.0",
+  "productName": "Threadleaf",
   "description": "A local, read-only Codex conversation reader for macOS",
   "main": "main.js",
   "scripts": {
@@ -65,7 +65,7 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "icon": "build/app.icns"
     },
-    "artifactName": "AI-Session-Manager-${version}-mac-${arch}.${ext}"
+    "artifactName": "Threadleaf-${version}-mac-${arch}.${ext}"
   },
   "devDependencies": {
     "electron": "^43.8.7",
@@ -74,10 +74,10 @@
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/liyunhui0707/session-manager.git"
+    "url": "https://github.com/liyunhui0707/threadleaf.git"
   },
   "homepage": "https://session-manager.outerepoch3.chatgpt.site",
   "bugs": {
-    "url": "https://github.com/liyunhui0707/session-manager/issues"
+    "url": "https://github.com/liyunhui0707/threadleaf/issues"
   }
 }

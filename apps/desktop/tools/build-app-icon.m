@@ -1,6 +1,6 @@
 #import <AppKit/AppKit.h>
 
-// The same green wave mark as the reader shell, drawn at every native icon size.
+// The same leaf and thread mark as the reader shell, drawn at every native icon size.
 int main(int argc, const char *argv[]) {
   @autoreleasepool {
     if (argc != 2) return 2;
@@ -20,13 +20,17 @@ int main(int argc, const char *argv[]) {
         [[NSColor colorWithCalibratedRed:.208 green:.388 blue:.310 alpha:1] setFill];
         [[NSBezierPath bezierPathWithRoundedRect:NSMakeRect(90,90,844,844) xRadius:190 yRadius:190] fill];
         [[NSColor colorWithCalibratedRed:.96 green:.98 blue:.95 alpha:1] setStroke];
-        for (CGFloat y = 390; y <= 630; y += 120) {
-          NSBezierPath *wave = [NSBezierPath bezierPath]; wave.lineWidth = 49; wave.lineCapStyle = NSLineCapStyleRound;
-          [wave moveToPoint:NSMakePoint(290,y)];
-          [wave curveToPoint:NSMakePoint(512,y) controlPoint1:NSMakePoint(360,y+85) controlPoint2:NSMakePoint(430,y+15)];
-          [wave curveToPoint:NSMakePoint(734,y) controlPoint1:NSMakePoint(590,y-20) controlPoint2:NSMakePoint(660,y-75)];
-          [wave stroke];
-        }
+        NSAffineTransform *mark = [NSAffineTransform transform];
+        [mark translateXBy:90 yBy:934];
+        [mark scaleXBy:844.0/64 yBy:-844.0/64]; [mark concat];
+        NSBezierPath *leaf = [NSBezierPath bezierPath];
+        leaf.lineWidth = 4; leaf.lineCapStyle = NSLineCapStyleRound; leaf.lineJoinStyle = NSLineJoinStyleRound;
+        [leaf moveToPoint:NSMakePoint(16,45)];
+        [leaf curveToPoint:NSMakePoint(50,14) controlPoint1:NSMakePoint(10,25) controlPoint2:NSMakePoint(28,17)];
+        [leaf curveToPoint:NSMakePoint(22,46) controlPoint1:NSMakePoint(50,36) controlPoint2:NSMakePoint(42,51)];
+        [leaf moveToPoint:NSMakePoint(14,52)];
+        [leaf curveToPoint:NSMakePoint(40,25) controlPoint1:NSMakePoint(22,41.3) controlPoint2:NSMakePoint(30.7,32.3)];
+        [leaf stroke];
         [NSGraphicsContext restoreGraphicsState];
         NSString *name = [NSString stringWithFormat:@"icon_%ldx%ld%@.png", (long)size, (long)size, scale == 2 ? @"@2x" : @""];
         NSData *data = [bitmap representationUsingType:NSBitmapImageFileTypePNG properties:@{}];

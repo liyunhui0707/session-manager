@@ -6,6 +6,15 @@ const { createLibrarySettings } = require('./lib/session-library-settings');
 const { createWindowRouter } = require('./lib/session-windows');
 const { createWindowContext } = require('./lib/session-window-context');
 
+// Keep existing settings and Chromium storage across the display-name change.
+if (app.isPackaged && !app.commandLine.hasSwitch('user-data-dir') &&
+    app.getPath('userData') === path.join(app.getPath('appData'), 'Threadleaf')) {
+  const profile = path.join(app.getPath('appData'), 'AI Session Manager');
+  require('node:fs').mkdirSync(profile, { recursive: true });
+  app.setPath('userData', profile);
+  app.setPath('sessionData', profile);
+}
+
 const contexts = new Map();
 const router = createWindowRouter(ipcMain);
 let sharedSettings;
@@ -15,7 +24,7 @@ function createWindow(initial) {
   if (quitting) return;
   const window = new BrowserWindow({
     width: 1280, height: 820, minWidth: 900, minHeight: 600,
-    title: 'AI Session Manager', show: false,
+    title: 'Threadleaf', show: false,
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true,
       preload: path.join(__dirname, 'preload.js') },
   });

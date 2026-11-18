@@ -50,8 +50,8 @@ async function readConversation(data) {
     // Unknown or non-inline bodies remain readable rather than guessed from a prefix.
     if (presentation?.kind === 'questions') return;
     let hit = body.hit;
-    if (query && presentation) {
-      const visible = extractConversationTextRuns({ messages: [{ role: message.role, text: body.text }] })
+    if (query && body.text !== undefined && (presentation || body.images?.length)) {
+      const visible = extractConversationTextRuns({ messages: [{ role: message.role, text: body.text, imageCount: body.images?.length }] })
         .find(text => fold(text).includes(query));
       const at = visible ? originalOffset(visible, fold(visible).indexOf(query)) : -1;
       hit = visible ? { at: 0, snippet: visible.slice(Math.max(0, at - 40), at + 160) } : null;
@@ -73,6 +73,7 @@ async function readConversation(data) {
           matches.push({ page, message: messages.length, snippet: hit.snippet });
         totalMatches++;
       }
+      if (message.role === 'user' && part.start === 0 && body.images?.length) part.message.images = body.images;
       messages.push(part.message); textBytes += part.bytes;
     }
     count++;
