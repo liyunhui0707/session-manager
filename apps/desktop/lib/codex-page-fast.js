@@ -1,19 +1,10 @@
 'use strict';
 const { createConversationProjection } = require('./codex-page-projection');
 const SMALL_RECORD_BYTES = 32 * 1024;
-const payloadKeys = new Set(['type','role','phase','channel','message','last_agent_message','content']);
+const { childPath: projectedPath, isImagePath } = require('./codex-page-projection-path');
 const limit = () => { throw Object.assign(new Error('JSON_LIMIT'), { code: 'JSON_LIMIT' }); };
-function childPath(frame) {
-  if (!frame) return [];
-  const p = frame.path, key = frame.kind === 'array' ? '*' : frame.key;
-  if (!p) return null;
-  if (!p.length && ['type','payload'].includes(key)) return [key];
-  if (p.length === 1 && p[0] === 'payload' && payloadKeys.has(key)) return [...p,key];
-  if (p.join('.') === 'payload.content' && key === '*') return [...p,key];
-  if (p.join('.') === 'payload.content.*' && ['type','text'].includes(key)) return [...p,key];
-  return null;
-}
 function project(value, options, stack = []) {
+  const childPath = frame => projectedPath(frame, !!options.createImage);
   const p = childPath(stack.at(-1));
   if (value && typeof value === 'object') {
     if (stack.length >= 128) limit();
@@ -30,8 +21,8 @@ function project(value, options, stack = []) {
   }
   if (!p) return undefined;
   if (typeof value === 'string') {
-    if (['text','message','last_agent_message'].includes(p.at(-1))) {
-      const sink = options.createText?.(stack);
+    if (['text','message','last_agent_message'].includes(p.at(-1)) || options.createImage && isImagePath(p)) {
+      const sink = isImagePath(p) ? options.createImage(stack) : options.createText?.(stack);
       if (!sink) return value;
       // Match the streaming string decoder's bounded UTF-16 chunk boundaries.
       for (let i=0;i<value.length;) {

@@ -52,7 +52,8 @@ function createConversationReader() {
       waiting: result.waiting, ambiguous: result.ambiguous, incomplete: result.incomplete, diagnostics: result.conversation.diagnostics } } : null;
   }
   function publish(state, result, latest) {
-    return { name: state.source.name, cwd: state.source.cwd || '', sourceBytes: result.snapshot.size, conversation: result.conversation,
+    return { name: state.source.name, cwd: state.source.cwd || '', sourceBytes: result.snapshot.size, conversation: { ...result.conversation, messages: result.conversation.messages.map(({ images, ...message }) =>
+        images?.length ? { ...message, imageCount: images.length } : message) },
       page: { readerId: state.id, number: result.number + 1, hasPrevious: result.number > 0,
         hasNext: result.number + 1 < result.pages, pages: result.pages, latest,
         conversationOnly: true, waiting: result.waiting, ambiguous: result.ambiguous,
@@ -112,6 +113,7 @@ function createConversationReader() {
       if (!current || current.id !== request.readerId || current.result.number + 1 !== request.page) return null;
       const message = current.result.conversation.messages[request.message];
       if (!message) return null;
+      if (message.images?.[request.image]) return { attachment: message.images[request.image], source: current.source, snapshot: current.result.snapshot };
       const { describeMessage } = require('./session-viewer/conversation-presentation');
       const image = describeMessage(message.text, message.role, true)?.images?.[request.image];
       return image ? { path: image.path, source: current.source } : null;

@@ -1,4 +1,5 @@
 'use strict';
+const { imageProjection, contentImages, eventImages, mergeImages } = require('./codex-page-image-projection');
 const { TextState, fold } = require('./codex-page-text-state');
 const TEXT = Symbol('source text'), CONTENT = Symbol('joined content');
 const isText = value => !!value?.[TEXT];
@@ -12,6 +13,7 @@ function textProjection(recordNumber, query = '') {
   let field = 0;
   const arrays = new WeakMap(), candidates = new WeakMap(), parents = new WeakMap();
   return {
+    createImage: imageProjection(recordNumber),
     createText(frames) {
       const id = `${recordNumber}:${field++}`;
       const block = frames.at(-1), array = frames.at(-2);
@@ -37,6 +39,11 @@ function textProjection(recordNumber, query = '') {
       };
     },
     finishContainer(frame) {
+      if (frame.path?.join('.') === 'payload' && frame.value?.type === 'user_message') {
+        const images = eventImages(frame.value);
+        if (images.length) frame.value.message = { ...(isText(frame.value.message) ? frame.value.message :
+          { [TEXT]: true, ...new TextState(fold(query)).summary(), refs: [] }), images };
+      }
       if (parents.has(frame) && supported(frame.value)) {
         arrays.set(parents.get(frame), candidates.get(frame.value.text));
       }
@@ -50,12 +57,14 @@ function textProjection(recordNumber, query = '') {
       const blocks = frame.value.filter(supported).map(block => block.text);
       const state = arrays.get(frame) || new TextState(fold(query));
       const refs = blocks.flatMap((body, i) => i ? [{ literal: '\n\n', length: 2 }, ...body.refs] : body.refs);
-      frame.value[CONTENT] = { [TEXT]: true, ...state.summary(), refs };
+      frame.value[CONTENT] = { [TEXT]: true, ...state.summary(), refs, images: contentImages(frame.value) };
     },
   };
 }
 const textPolicy = {
   isText,
+  hasContent: value => isText(value) && (value.length > 0 || value.images?.length > 0),
+  merge: mergeImages,
   restore: value => ({ ...value, [TEXT]: true }),
   equal: (a, b) => isText(a) && isText(b) && a.length === b.length && a.digest === b.digest,
   check: value => value,

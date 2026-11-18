@@ -20,7 +20,7 @@ function renderStructuredConversation(conversation, opts) {
   const fragment = doc.createDocumentFragment();
   const { describeMessage, renderPresentation } = typeof require !== 'undefined'
     ? require('./conversation-presentation') : window.SessionViewer;
-  for (const [index, { role, text, continuation }] of conversation.messages.entries()) {
+  for (const [index, { role, text, continuation, imageCount }] of conversation.messages.entries()) {
     const section = doc.createElement('section');
     section.setAttribute('class', `read-section ${role}-turn`);
     const heading = doc.createElement('h2');
@@ -35,7 +35,12 @@ function renderStructuredConversation(conversation, opts) {
       label.appendChild(doc.createTextNode(`长消息 · 第 ${continuation.number} / ${continuation.total} 段`));
       section.appendChild(label);
     }
-    const presentation = describeMessage(text, role);
+    let presentation = describeMessage(text, role);
+    if (role === 'user' && Number.isInteger(imageCount) && imageCount > 0 && imageCount <= 16) {
+      presentation = { kind: 'images', images: Array.from({ length: imageCount }, (_, i) =>
+        ({ number: presentation?.images?.[i]?.number || String(i + 1) })),
+        text: presentation?.kind === 'images' ? presentation.text : text };
+    }
     section.appendChild(presentation ? renderPresentation(presentation, doc, !!opts?.collapseLongMessages,
       opts?.loadImage && ((image, size) => opts.loadImage(index, image, size)))
       : renderMessageBody(text, { document: doc, role,

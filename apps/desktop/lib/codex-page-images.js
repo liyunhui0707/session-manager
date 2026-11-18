@@ -55,7 +55,11 @@ function registerConversationImages(ipc, { reader, sourceState, thumbnail, tempR
     if (!ref) return { ok: false, reason: 'stale-image' };
     imageBusy = true;
     try {
-      const result = await readImage(ref, tempRoot);
+      let result;
+      if (ref.attachment?.kind === 'unavailable') throw fail(ref.attachment.reason);
+      if (ref.attachment?.kind === 'embedded') {
+        result = await require('./codex-page-native-image').readEmbeddedImage(ref);
+      } else result = await readImage(ref.attachment ? { ...ref, path: ref.attachment.path } : ref, tempRoot);
       if (request.size === 'preview') {
         result.bytes = await thumbnail(result.bytes); result.mime = 'image/png';
         if (!result.bytes?.length || result.bytes.length > MAX_IMAGE_BYTES) throw fail('unsupported-image');

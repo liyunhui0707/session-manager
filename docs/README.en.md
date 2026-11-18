@@ -50,6 +50,6 @@ classifies it as a development dependency; see [remaining build-tool findings](d
 
 Unknown or incompletely recognized message formats remain readable to avoid hiding ordinary text. Source files are unchanged.
 
-First opens and uncached searches scan the conversation. Resource limits and corrupt records produce visible incomplete-read warnings. Local static PNG/JPEG references are supported up to 8 MiB and 24 megapixels; remote and inline encoded images are not loaded, and deleted temporary images cannot be recovered.
+First opens and uncached searches scan the conversation. Resource limits and corrupt records produce visible incomplete-read warnings. Local references and Codex inline static PNG/JPEG attachments are loaded on demand, up to 8 MiB and 24 megapixels. Remote images are not fetched; deleted local images without an embedded copy cannot be recovered.
 
 Please report problems using synthetic examples, without chats, local paths, or credentials. This is an independent project, not affiliated with OpenAI or Anthropic. [MIT licensed](../LICENSE).

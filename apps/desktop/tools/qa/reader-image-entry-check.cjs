@@ -9,16 +9,20 @@ module.exports = async ({ base, win, check, e, dialog, image }) => {
   const text = value => ({ type: 'response_item', payload: { type: 'message', role: 'assistant',
     phase: 'final_answer', content: [{ type: 'output_text', text: value }] } });
   const digest = () => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-  for (const direction of ['up', 'down', 'missing']) {
+  for (const direction of ['up', 'down', 'missing', 'native-up', 'native-down']) {
     const source = direction === 'missing' ? path.join(base, 'automatic-images/missing.png') : image;
-    fs.writeFileSync(file, [text(paragraph), { type: 'event_msg', payload: { type: 'user_message',
+    const native = { type: 'response_item', payload: { type: 'message', role: 'user', content: [
+      { type: 'input_text', text: '[Image #1]' },
+      { type: 'input_image', image_url: 'data:image/png;base64,' + fs.readFileSync(image).toString('base64') },
+    ] } };
+    fs.writeFileSync(file, [text(paragraph), direction.startsWith('native-') ? native : { type: 'event_msg', payload: { type: 'user_message',
       message: `<image name=[Image #1] path="${source}"></image>` } }, text(paragraph)]
       .map(record => JSON.stringify(record)).join('\n') + '\n');
     const before = digest();
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
     win.setSize(1100, 820); win.show(); win.focus();
     await e('sessionManagerApp.chooseCodexFile()'); await pause(150);
-    const up = direction !== 'down';
+    const up = !direction.endsWith('down');
     const point = await e(`(()=>{
       const r=document.querySelector('.read-shell'),c=document.querySelector('.attachment-controls');
       r.scrollTop+=${up ? 'c.getBoundingClientRect().bottom-r.getBoundingClientRect().top+12' : 'c.getBoundingClientRect().top-r.getBoundingClientRect().bottom-12'};
