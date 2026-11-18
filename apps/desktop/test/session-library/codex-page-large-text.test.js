@@ -129,8 +129,8 @@ test('thousands of blocks retain only the joined inline cache and keep presentat
     { type: 'tool_result', text: 'x'.repeat(2 * 1024 ** 2) }, { text: question, type: 'input_text' },
   ]), false);
   const result = await reader.search(source, 'Clear reader');
-  assert.equal(result.count, 2);
-  assert.equal(result.matches.length, 1);
+  assert.equal(result.count, 1);
+  assert.equal(result.matches.length, 0);
   assert.equal(result.incomplete, false);
   assert.equal((await reader.search(source, 'transport-only-id')).matches.length, 0);
 });

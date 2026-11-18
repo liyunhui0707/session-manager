@@ -10,13 +10,13 @@ const record = (type, payload) => JSON.stringify({ type, payload }) + '\n';
 const turn = n => record('event_msg', { type: 'user_message', message: `Question ${n}` }) +
   record('response_item', { type: 'message', role: 'assistant', phase: 'commentary', content: [{ type: 'output_text', text: 'progress-only' }] }) +
   record('event_msg', { type: 'task_complete', last_agent_message: `Answer ${n} **Markdown**` });
-test('whole-conversation search indexes displayed question replies, not transport IDs or image paths', async t => {
+test('whole-conversation search excludes tool-question replies and indexes image captions', async t => {
   const { reader, source, filePath } = await setup(t);
   const question = '<send_user_message_question_reply>' + JSON.stringify([{ question: 'Which direction?', answer: 'Calm reader', questionItemId: 'hiddenroutingneedle' }]) + '</send_user_message_question_reply>';
   const image = '<image name=[Image #1] path="/tmp/hiddenpathneedle.png"></image>\nPlease inspect this layout.';
   await fs.writeFile(filePath, [question, image].map(message => record('event_msg', { type: 'user_message', message })).join(''));
-  for (const query of ['Which direction', 'Calm reader', 'inspect this layout']) assert.equal((await reader.search(source, query)).matches.length, 1);
-  for (const query of ['hiddenroutingneedle', 'hiddenpathneedle', 'questionItemId']) assert.equal((await reader.search(source, query)).matches.length, 0);
+  assert.equal((await reader.search(source, 'inspect this layout')).matches.length, 1);
+  for (const query of ['Which direction', 'Calm reader', 'hiddenroutingneedle', 'hiddenpathneedle', 'questionItemId']) assert.equal((await reader.search(source, query)).matches.length, 0);
 });
 async function setup(t, compressed = false) {
   const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'asm-v2-')));

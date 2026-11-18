@@ -19,11 +19,11 @@ module.exports = async function ({ base, win, check, e, dialog }) {
   const before = hash();
   dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });
   await e('sessionManagerApp.chooseCodexFile()');
-  check('question replies render readable question and answer cards', await e("document.querySelectorAll('.question-reply').length===2 && document.querySelector('.question-answer').textContent.includes('简洁精致') && !document.getElementById('readMount').textContent.includes('questionItemId')"));
+  check('tool-question cards are hidden while final replies remain visible', await e("document.querySelectorAll('.question-reply').length===0 && !document.getElementById('readMount').textContent.includes('阅读器应该采用') && document.getElementById('readMount').textContent.includes('收到。保留安静')"));
   check('untrusted outside image references produce path-free cards without image loads', await e("document.querySelectorAll('.attachment-card').length===1 && document.querySelectorAll('.attachment-card img').length===0 && !document.getElementById('readMount').textContent.includes('never-read-synthetic')"));
   check('image CSP permits only object URLs', await e("document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]').content.includes('img-src blob:;')"));
   await e("codexLive.search('macOS 原生阅读器','current')");
-  check('whole conversation finds readable question answers', await e("document.querySelectorAll('.codex-search-hit').length===1 && document.querySelector('.codex-search-hit').textContent.includes('macOS 原生阅读器')"));
+  check('whole conversation excludes hidden question answers', await e("document.querySelectorAll('.codex-search-hit').length===0"));
   await e("codexLive.search('synthetic-private-routing','current')");
   check('transport IDs do not appear in search results', await e("document.querySelectorAll('.codex-search-hit').length===0"));
   win.setSize(1100, 820);
@@ -47,11 +47,11 @@ module.exports = async function ({ base, win, check, e, dialog }) {
   await e('selectSyntheticImage()');
   await e('sessionManagerApp.reloadCodexFile()');
   check('reloading conversation releases preview and does not persist image selection', await e("window.__revokedImages.length===2 && !document.querySelector('.attachment-preview img')"));
-  await e("document.querySelector('.question-reply').scrollIntoView({block:'center'})");
+  await e("document.querySelector('.read-shell').scrollTop=0");
   fs.writeFileSync(base + '/presentation-questions-light.png', (await win.webContents.capturePage()).toPNG());
   win.setSize(900,600);
-  await e("document.documentElement.dataset.theme='dark';document.querySelector('.question-reply').scrollIntoView({block:'center'})");
-  check('question cards fit narrow dark reader', await e("document.documentElement.scrollWidth<=innerWidth && document.querySelector('.question-reply').getBoundingClientRect().width>0"));
+  await e("document.documentElement.dataset.theme='dark';document.querySelector('.read-shell').scrollTop=0");
+  check('filtered conversation fits narrow dark reader', await e("document.documentElement.scrollWidth<=innerWidth && !document.querySelector('.question-reply') && document.getElementById('readMount').textContent.includes('收到。保留安静')"));
   fs.writeFileSync(base + '/presentation-questions-dark.png', (await win.webContents.capturePage()).toPNG());
   check('presentation and preview preserve synthetic transcript bytes', hash() === before);
 };

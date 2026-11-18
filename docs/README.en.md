@@ -12,7 +12,7 @@ No app account, AI service, analytics, or chat upload is required. Browsing and 
 
 The downloadable build supports Apple Silicon Macs running macOS 12 or later. Download the DMG from GitHub Releases and drag AI Session Manager into Applications. Intel users can build from source; an accepted Intel binary is not currently offered.
 
-Version **0.11.2** keeps text stable when images first load while reading upwards from the latest messages, and keeps dismissed previews closed. Independent reader windows let you place conversations on different macOS desktops.
+Version **0.12.0** hides recognized tool-question exchanges from Codex reading, pagination, message counts and search, while retaining prompts typed in the normal input box and final replies. Independent reader windows let you place conversations on different macOS desktops.
 
 **The release is not Developer ID signed or notarized.** macOS may block the first launch. Only if you trust this repository, use the system's Privacy & Security → Open Anyway option. Do not disable Gatekeeper globally. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
@@ -47,6 +47,8 @@ aside before rebuilding. The full audit includes Electron, even though npm
 classifies it as a development dependency; see [remaining build-tool findings](dependency-audit.md).
 
 ## Scope
+
+Unknown or incompletely recognized message formats remain readable to avoid hiding ordinary text. Source files are unchanged.
 
 First opens and uncached searches scan the conversation. Resource limits and corrupt records produce visible incomplete-read warnings. Local static PNG/JPEG references are supported up to 8 MiB and 24 megapixels; remote and inline encoded images are not loaded, and deleted temporary images cannot be recovered.
 
