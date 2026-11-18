@@ -12,7 +12,7 @@ if (process.platform !== 'darwin' || !['arm64', 'x64'].includes(process.arch)) {
 if (process.argv.length !== 2) throw Error('Build on the target architecture; no cross-build arguments are accepted');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json')));
-const prefix = path.join(root, 'dist', `AI-Session-Manager-${pkg.version}-mac-${process.arch}`);
+const prefix = path.join(root, 'dist', `Threadleaf-${pkg.version}-mac-${process.arch}`);
 for (const ext of ['dmg', 'zip']) {
   if (fs.existsSync(`${prefix}.${ext}`)) throw Error(`Artifact already exists: ${prefix}.${ext}; move the previous candidate aside before rebuilding`);
 }

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 export function releaseFiles(directory, version, arch) {
   if (!/^\d+\.\d+\.\d+$/.test(version) || !['arm64', 'x64'].includes(arch)) throw Error('Invalid release identity');
   return ['dmg', 'zip'].map(extension => {
-    const name = `AI-Session-Manager-${version}-mac-${arch}.${extension}`;
+    const name = `Threadleaf-${version}-mac-${arch}.${extension}`;
     const file = path.join(directory, name);
     const stat = fs.lstatSync(file);
     if (!stat.isFile() || stat.isSymbolicLink() || stat.size === 0) throw Error('Expected nonempty regular release artifact');

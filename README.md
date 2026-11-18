@@ -1,12 +1,12 @@
-# AI Session Manager
+# Threadleaf
 
 **给好对话，一个值得回来的地方。**
 
 在 Mac 上安静地回看 Codex 对话：找到自己的提示词和最终回复，搜索过去的答案，保留原始聊天文件。
 
-[产品网站](https://session-manager.outerepoch3.chatgpt.site) · [下载 Mac 版](https://github.com/liyunhui0707/session-manager/releases/latest) · [使用指南](docs/user-guide.md) · [更新记录](CHANGELOG.md) · [English](docs/README.en.md)
+[产品网站](https://session-manager.outerepoch3.chatgpt.site) · [下载 Mac 版](https://github.com/liyunhui0707/threadleaf/releases/latest) · [使用指南](docs/user-guide.md) · [更新记录](CHANGELOG.md) · [English](docs/README.en.md)
 
-![Session Manager 阅读界面；内容为虚构演示](website/public/assets/reader-preview.png)
+![Threadleaf 阅读界面；内容为虚构演示](website/public/assets/reader-preview.png)
 
 ## 为回看而设计
 
@@ -23,11 +23,13 @@
 
 当前提供 **Apple Silicon（M 系列芯片）Mac** 安装包，要求 **macOS 12 或更新版本**。Intel Mac 用户可从源码构建；暂不提供已验收的 Intel 下载包。
 
-1. 从 [GitHub Releases](https://github.com/liyunhui0707/session-manager/releases/latest) 下载 `.dmg`。
-2. 打开磁盘映像，将 **AI Session Manager** 拖入“应用程序”。
+1. 从 [GitHub Releases](https://github.com/liyunhui0707/threadleaf/releases/latest) 下载 `.dmg`。
+2. 打开磁盘映像，将 **Threadleaf** 拖入“应用程序”。
 3. 启动应用；已有本地 Codex 记录时会自动加载，也可以选择其他来源。
 
-当前版本 **0.12.0** 隐藏已识别的过程提问与回答，阅读、分页和搜索仅保留主动发送的提示词及每轮最终回复。支持多窗口阅读，可把不同会话放到不同 macOS 桌面。
+**Threadleaf 0.13.0** 是原 AI Session Manager 的新版，支持会话内嵌图片。升级前退出旧版，将 Threadleaf 安装到原应用所在目录，打开新版确认收藏与设置后再移走旧 App。
+
+阅读器隐藏已识别的过程提问与回答，阅读、分页和搜索仅保留主动发送的提示词及每轮最终回复。支持多窗口阅读，可把不同会话放到不同 macOS 桌面。
 
 **当前发行包未使用 Apple Developer ID 签名，也未公证。** macOS 可能阻止首次打开。确认来自本仓库后，可按系统提示在“系统设置 → 隐私与安全性”中选择“仍要打开”。不需要关闭系统安全保护；详细说明见 [安装指南](docs/installation.md)。
 
@@ -54,8 +56,8 @@
 需要 macOS、Node.js 24 和 Apple Command Line Tools。首次安装工具可运行 `xcode-select --install`。
 
 ```sh
-git clone https://github.com/liyunhui0707/session-manager.git
-cd session-manager/apps/desktop
+git clone https://github.com/liyunhui0707/threadleaf.git
+cd threadleaf/apps/desktop
 npm ci
 npm run dev
 ```
@@ -76,7 +78,7 @@ npm run dist:mac
 
 ## 参与与支持
 
-欢迎通过 [Issues](https://github.com/liyunhui0707/session-manager/issues) 反馈问题或提出改进。请使用虚构示例，避免上传聊天记录、完整本机路径或凭据。
+欢迎通过 [Issues](https://github.com/liyunhui0707/threadleaf/issues) 反馈问题或提出改进。请使用虚构示例，避免上传聊天记录、完整本机路径或凭据。
 
 [贡献指南](CONTRIBUTING.md) · [架构](docs/architecture.md) · [发布流程](docs/releasing.md) · [路线图](docs/roadmap.md)
 

@@ -14,7 +14,7 @@ test('website download links agree with its published version and disclose unnot
   const downloads=links.filter(s=>/releases\/download\//.test(s));
   assert.equal(downloads.length,2);
   for(const url of downloads){
-    assert.ok(url.startsWith(`https://github.com/liyunhui0707/session-manager/releases/download/v${release}/AI-Session-Manager-${release}-mac-arm64.`));
+    assert.ok(url.startsWith(`https://github.com/liyunhui0707/threadleaf/releases/download/v${release}/Threadleaf-${release}-mac-arm64.`));
   }
   assert.match(html,/未使用 Apple Developer ID 签名，也未公证/);assert.match(html,/尚不提供应用内自动安装/);
 });

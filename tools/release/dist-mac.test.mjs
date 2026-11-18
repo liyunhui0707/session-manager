@@ -44,7 +44,7 @@ test('runtime installation failure stops packaging', mac, () => {
 });
 test('existing release assets are refused before any build work', mac, () => {
   const root = fixture();
-  const asset = path.join(root, 'dist', `AI-Session-Manager-0.0.1-mac-${process.arch}.zip`);
+  const asset = path.join(root, 'dist', `Threadleaf-0.0.1-mac-${process.arch}.zip`);
   fs.writeFileSync(asset, 'previous candidate');
   const result = run(root);
   assert.match(result.stderr, /Artifact already exists/);
@@ -73,6 +73,6 @@ test('a successful builder with an invalid app signature cannot produce release 
   assert.notEqual(result.status, 0, result.stdout);
   assert.match(result.stderr, /Bundle signature verification failed/);
   for (const extension of ['zip', 'dmg']) {
-    assert.equal(fs.existsSync(path.join(root, 'dist', `AI-Session-Manager-0.0.1-mac-${process.arch}.${extension}`)), false);
+    assert.equal(fs.existsSync(path.join(root, 'dist', `Threadleaf-0.0.1-mac-${process.arch}.${extension}`)), false);
   }
 });

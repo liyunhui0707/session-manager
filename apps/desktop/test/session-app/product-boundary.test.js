@@ -11,18 +11,18 @@ function read(relativePath) {
   return fs.readFileSync(path.join(APP_ROOT, relativePath), 'utf8');
 }
 
-test('package identity and dependency surface belong only to AI Session Manager', () => {
+test('package identity and dependency surface belong only to Threadleaf', () => {
   const pkg = JSON.parse(read('package.json'));
-  assert.equal(pkg.name, 'ai-session-manager');
+  assert.equal(pkg.name, 'threadleaf');
   assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(pkg.productName, 'AI Session Manager');
+  assert.equal(pkg.productName, 'Threadleaf');
   assert.equal(pkg.build.appId, 'com.aisessionmanager.desktop');
   assert.deepEqual(pkg.dependencies || {}, {});
   assert.equal(pkg.scripts['session-import:claude'], undefined);
   assert.equal(pkg.scripts['session-import:codex'], undefined);
 
   const lock = JSON.parse(read('package-lock.json'));
-  assert.equal(lock.name, 'ai-session-manager');
+  assert.equal(lock.name, 'threadleaf');
   assert.equal(lock.version, pkg.version);
   assert.equal(lock.packages[''].version, pkg.version);
   assert.deepEqual(lock.packages[''].dependencies || {}, {});
@@ -69,7 +69,7 @@ test('preload exposes only the narrow sessionApi surface', () => {
 
 test('standalone shell contains session features and no editor surfaces', () => {
   const html = read('index.html');
-  assert.match(html, /AI Session Manager/);
+  assert.match(html, /Threadleaf/);
   assert.match(html, /session-viewer\/grouping\.js/);
   assert.match(html, /session-viewer\/favorites\.js/);
   assert.match(html, /session-viewer\/search-index\.js/);

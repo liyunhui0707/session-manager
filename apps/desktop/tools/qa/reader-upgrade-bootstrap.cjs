@@ -5,8 +5,12 @@ module.exports = function install(base, stage) {
   const assert = require('node:assert/strict');
   const path = require('node:path');
   app.setPath('home', path.join(base, 'home'));
-  app.setPath('userData', path.join(base, 'profile'));
-  app.setPath('sessionData', path.join(base, 'profile'));
+  const appData = path.join(base, 'profile');
+  const defaultProfile = path.join(appData, app.getName());
+  fs.mkdirSync(defaultProfile, { recursive: true });
+  app.setPath('appData', appData);
+  app.setPath('userData', defaultProfile);
+  app.setPath('sessionData', defaultProfile);
   let chooserCalls = 0;
   dialog.showOpenDialog = async () => {
     chooserCalls++;

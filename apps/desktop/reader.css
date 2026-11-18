@@ -231,3 +231,5 @@ legend { font-size: 12px; margin-bottom: 12px; font-weight: 600; }
 :root[data-font="xxxxlarge"] { --reader-size: 26px; }
 
 .list-actions { display: flex; align-items: center; gap: 2px; }
+
+.brand-symbol svg, .welcome-mark svg { width: 100%; height: 100%; stroke: none; }

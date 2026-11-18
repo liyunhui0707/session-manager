@@ -1,5 +1,5 @@
 // node reader-upgrade.mjs '/old/App.app' '/candidate/App.app'
-// Tests normal quits and replacement at the same isolated install path. This
+// Tests normal quits and replacement inside an isolated Applications directory. This
 // does not simulate Finder/Gatekeeper or claim a browser-quarantined install.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -26,13 +26,13 @@ fs.writeFileSync(source, [
 ].map(x => JSON.stringify(x)).join('\n') + '\n');
 const snapshot = () => JSON.stringify({ hash: hash(source), size: fs.statSync(source).size, mtime: fs.statSync(source).mtimeMs });
 const before = snapshot();
-const installed = path.join(base, 'install/AI Session Manager.app');
+let installed = path.join(base, 'install', path.basename(apps[0]));
 const bootstrap = fileURLToPath(new URL('./reader-upgrade-bootstrap.cjs', import.meta.url));
 console.log('Upgrade QA evidence:', base);
 
 async function launch(stage) {
-  const child = spawn(path.join(installed, 'Contents/MacOS/AI Session Manager'),
-    ['--inspect-brk=127.0.0.1:0', '--user-data-dir=' + path.join(base, 'profile')], {
+  const child = spawn(path.join(installed, 'Contents/MacOS', execFileSync('/usr/libexec/PlistBuddy', ['-c', 'Print CFBundleExecutable', path.join(installed, 'Contents/Info.plist')], { encoding: 'utf8' }).trim()),
+    ['--inspect-brk=127.0.0.1:0'], {
       detached: true, stdio: ['ignore', 'pipe', 'pipe'],
       env: { PATH: '/usr/bin:/bin', HOME: path.join(base, 'home'), TMPDIR: path.join(base, 'home/tmp'), LANG: 'en_US.UTF-8' },
     });
@@ -91,6 +91,7 @@ try {
   for (const stage of ['seed', 'restart', 'upgraded']) {
     if (stage === 'upgraded') {
       fs.renameSync(installed, path.join(base, 'install/previous.app'));
+      installed = path.join(base, 'install', path.basename(apps[1]));
       execFileSync('/usr/bin/ditto', [apps[1], installed]);
     }
     const result = await launch(stage); stages.push(result);

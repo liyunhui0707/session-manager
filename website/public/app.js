@@ -7,7 +7,7 @@ theme.addEventListener('click', () => {
   theme.setAttribute('aria-pressed', String(dark));
   theme.textContent = dark ? '查看浅色外观 ◑' : '查看深色外观 ◐';
   preview.src = dark ? 'assets/reader-dark.png' : 'assets/reader-preview.png';
-  preview.alt = `Session Manager ${dark ? '深色' : '浅色'}界面，内容为虚构演示`;
+  preview.alt = `Threadleaf ${dark ? '深色' : '浅色'}界面，内容为虚构演示`;
 });
 document.querySelector('.preview').addEventListener('click', () => {
   dialog.querySelector('img').src = preview.src;
